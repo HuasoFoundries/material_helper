@@ -2,6 +2,7 @@ define([
 	'jquery',
 	'velocity',
 	'hammerjs',
+	"./material_components/waves",
 	"./material_components/animation",
 	"./material_components/buttons",
 	"./material_components/cards",
@@ -17,9 +18,9 @@ define([
 	"./material_components/scrollspy",
 	"./material_components/sideNav",
 	"./material_components/slider",
-	"./material_components/tabs",
-	"./material_components/waves"
-], function ($, Velocity, hammerjs) {
+	"./material_components/tabs"
+
+], function ($, Velocity, hammerjs, Waves) {
 
 	'use strict';
 

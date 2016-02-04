@@ -1,5 +1,5 @@
-(function ($) {
-  $(document).ready(function() {
+define(['jquery'], function ($) {
+  $(document).ready(function () {
 
     $.fn.pushpin = function (options) {
 
@@ -11,10 +11,10 @@
       options = $.extend(defaults, options);
 
       $index = 0;
-      return this.each(function() {
+      return this.each(function () {
         var $uniqueId = Materialize.guid(),
-            $this = $(this),
-            $original_offset = $(this).offset().top;
+          $this = $(this),
+          $original_offset = $(this).offset().top;
 
         function removePinClasses(object) {
           object.removeClass('pin-top');
@@ -59,4 +59,4 @@
 
 
   });
-}( jQuery ));
+});

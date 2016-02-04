@@ -10,7 +10,7 @@
  * @see https://github.com/thesmart
  * @version 0.1.2
  */
-(function($) {
+define(['jquery'], function ($) {
 
 	var jWindow = $(window);
 	var elements = [];
@@ -19,10 +19,10 @@
 	var ticks = 0;
 	var unique_id = 1;
 	var offset = {
-		top : 0,
-		right : 0,
-		bottom : 0,
-		left : 0,
+		top: 0,
+		right: 0,
+		bottom: 0,
+		left: 0,
 	}
 
 	/**
@@ -35,7 +35,7 @@
 	 */
 	function findElements(top, right, bottom, left) {
 		var hits = $();
-		$.each(elements, function(i, element) {
+		$.each(elements, function (i, element) {
 			if (element.height() > 0) {
 				var elTop = element.offset().top,
 					elLeft = element.offset().left,
@@ -71,9 +71,9 @@
 			bottom = top + jWindow.height();
 
 		// determine which elements are in view
-//        + 60 accounts for fixed nav
-		var intersections = findElements(top+offset.top + 200, right+offset.right, bottom+offset.bottom, left+offset.left);
-		$.each(intersections, function(i, element) {
+		//        + 60 accounts for fixed nav
+		var intersections = findElements(top + offset.top + 200, right + offset.right, bottom + offset.bottom, left + offset.left);
+		$.each(intersections, function (i, element) {
 
 			var lastTick = element.data('scrollSpy:ticks');
 			if (typeof lastTick != 'number') {
@@ -86,7 +86,7 @@
 		});
 
 		// determine which elements are no longer in view
-		$.each(elementsInView, function(i, element) {
+		$.each(elementsInView, function (i, element) {
 			var lastTick = element.data('scrollSpy:ticks');
 			if (typeof lastTick == 'number' && lastTick !== ticks) {
 				// exited from view
@@ -101,14 +101,14 @@
 
 	/**
 	 * Called when window is resized
-	*/
+	 */
 	function onWinSize() {
 		jWindow.trigger('scrollSpy:winSize');
 	}
 
 	/**
 	 * Get time in ms
-   * @license https://raw.github.com/jashkenas/underscore/master/LICENSE
+	 * @license https://raw.github.com/jashkenas/underscore/master/LICENSE
 	 * @type {function}
 	 * @return {number}
 	 */
@@ -169,22 +169,28 @@
         offsetLeft : number -> offset from left. Default: 0
 	 * @returns {jQuery}
 	 */
-	$.scrollSpy = function(selector, options) {
+	$.scrollSpy = function (selector, options) {
 		var visible = [];
 		selector = $(selector);
-		selector.each(function(i, element) {
+		selector.each(function (i, element) {
 			elements.push($(element));
 			$(element).data("scrollSpy:id", i);
 			// Smooth scroll to section
-		  $('a[href=#' + $(element).attr('id') + ']').click(function(e) {
-		    e.preventDefault();
-		    var offset = $(this.hash).offset().top + 1;
+			$('a[href=#' + $(element).attr('id') + ']').click(function (e) {
+				e.preventDefault();
+				var offset = $(this.hash).offset().top + 1;
 
-//          offset - 200 allows elements near bottom of page to scroll
-			
-	    	$('html, body').animate({ scrollTop: offset - 200 }, {duration: 400, queue: false, easing: 'easeOutCubic'});
-			
-		  });
+				//          offset - 200 allows elements near bottom of page to scroll
+
+				$('html, body').animate({
+					scrollTop: offset - 200
+				}, {
+					duration: 400,
+					queue: false,
+					easing: 'easeOutCubic'
+				});
+
+			});
 		});
 		options = options || {
 			throttle: 100
@@ -196,7 +202,7 @@
 		offset.left = options.offsetLeft || 0;
 
 		var throttledScroll = throttle(onScroll, options.throttle || 100);
-		var readyScroll = function(){
+		var readyScroll = function () {
 			$(document).ready(throttledScroll);
 		};
 
@@ -210,10 +216,10 @@
 		setTimeout(readyScroll, 0);
 
 
-		selector.on('scrollSpy:enter', function() {
-			visible = $.grep(visible, function(value) {
-	      return value.height() != 0;
-	    });
+		selector.on('scrollSpy:enter', function () {
+			visible = $.grep(visible, function (value) {
+				return value.height() != 0;
+			});
 
 			var $this = $(this);
 
@@ -221,32 +227,30 @@
 				$('a[href=#' + visible[0].attr('id') + ']').removeClass('active');
 				if ($this.data('scrollSpy:id') < visible[0].data('scrollSpy:id')) {
 					visible.unshift($(this));
-				}
-				else {
+				} else {
 					visible.push($(this));
 				}
-			}
-			else {
+			} else {
 				visible.push($(this));
 			}
 
 
 			$('a[href=#' + visible[0].attr('id') + ']').addClass('active');
 		});
-		selector.on('scrollSpy:exit', function() {
-			visible = $.grep(visible, function(value) {
-	      return value.height() != 0;
-	    });
+		selector.on('scrollSpy:exit', function () {
+			visible = $.grep(visible, function (value) {
+				return value.height() != 0;
+			});
 
 			if (visible[0]) {
 				$('a[href=#' + visible[0].attr('id') + ']').removeClass('active');
 				var $this = $(this);
-				visible = $.grep(visible, function(value) {
-	        return value.attr('id') != $this.attr('id');
-	      });
-	      if (visible[0]) { // Check if empty
+				visible = $.grep(visible, function (value) {
+					return value.attr('id') != $this.attr('id');
+				});
+				if (visible[0]) { // Check if empty
 					$('a[href=#' + visible[0].attr('id') + ']').addClass('active');
-	      }
+				}
 			}
 		});
 
@@ -258,8 +262,10 @@
 	 * @param {Object=} options						Optional. Set { throttle: number } to change throttling. Default: 100 ms
 	 * @returns {jQuery}		$(window)
 	 */
-	$.winSizeSpy = function(options) {
-		$.winSizeSpy = function() { return jWindow; }; // lock from multiple calls
+	$.winSizeSpy = function (options) {
+		$.winSizeSpy = function () {
+			return jWindow;
+		}; // lock from multiple calls
 		options = options || {
 			throttle: 100
 		};
@@ -277,8 +283,8 @@
 											offsetLeft : number -> offset from left. Default: 0
 	 * @returns {jQuery}
 	 */
-	$.fn.scrollSpy = function(options) {
+	$.fn.scrollSpy = function (options) {
 		return $.scrollSpy($(this), options);
 	};
 
-})(jQuery);
+});

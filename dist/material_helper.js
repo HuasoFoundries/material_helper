@@ -2166,509 +2166,730 @@ define("github:julianshapiro/velocity@1.2.3", ["github:julianshapiro/velocity@1.
 
 _removeDefine();
 })();
-System.registerDynamic("src/material_components/animation.js", ["github:instagis/jquery_helper@0.2.1"], false, function(__require, __exports, __module) {
-  var _retrieveGlobal = System.get("@@global-helpers").prepareGlobal(__module.id, null, null);
-  (function() {
-    jQuery.extend(jQuery.easing, {easeInOutMaterial: function(x, t, b, c, d) {
-        if ((t /= d / 2) < 1)
-          return c / 2 * t * t + b;
-        return c / 4 * ((t -= 2) * t * t + 2) + b;
-      }});
-  })();
-  return _retrieveGlobal();
+(function() {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/waves.js", ["github:instagis/jquery_helper@0.2.1"], function() {
+  'use strict';
+  var Waves = Waves || {};
+  var $$ = document.querySelectorAll.bind(document);
+  function isWindow(obj) {
+    return obj !== null && obj === obj.window;
+  }
+  function getWindow(elem) {
+    return isWindow(elem) ? elem : elem.nodeType === 9 && elem.defaultView;
+  }
+  function offset(elem) {
+    var docElem,
+        win,
+        box = {
+          top: 0,
+          left: 0
+        },
+        doc = elem && elem.ownerDocument;
+    docElem = doc.documentElement;
+    if (typeof elem.getBoundingClientRect !== typeof undefined) {
+      box = elem.getBoundingClientRect();
+    }
+    win = getWindow(doc);
+    return {
+      top: box.top + win.pageYOffset - docElem.clientTop,
+      left: box.left + win.pageXOffset - docElem.clientLeft
+    };
+  }
+  function convertStyle(obj) {
+    var style = '';
+    for (var a in obj) {
+      if (obj.hasOwnProperty(a)) {
+        style += (a + ':' + obj[a] + ';');
+      }
+    }
+    return style;
+  }
+  var Effect = {
+    duration: 750,
+    show: function(e, element) {
+      if (e.button === 2) {
+        return false;
+      }
+      var el = element || this;
+      var ripple = document.createElement('div');
+      ripple.className = 'waves-ripple';
+      el.appendChild(ripple);
+      var pos = offset(el);
+      var relativeY = (e.pageY - pos.top);
+      var relativeX = (e.pageX - pos.left);
+      var scale = 'scale(' + ((el.clientWidth / 100) * 10) + ')';
+      if ('touches' in e) {
+        relativeY = (e.touches[0].pageY - pos.top);
+        relativeX = (e.touches[0].pageX - pos.left);
+      }
+      ripple.setAttribute('data-hold', Date.now());
+      ripple.setAttribute('data-scale', scale);
+      ripple.setAttribute('data-x', relativeX);
+      ripple.setAttribute('data-y', relativeY);
+      var rippleStyle = {
+        'top': relativeY + 'px',
+        'left': relativeX + 'px'
+      };
+      ripple.className = ripple.className + ' waves-notransition';
+      ripple.setAttribute('style', convertStyle(rippleStyle));
+      ripple.className = ripple.className.replace('waves-notransition', '');
+      rippleStyle['-webkit-transform'] = scale;
+      rippleStyle['-moz-transform'] = scale;
+      rippleStyle['-ms-transform'] = scale;
+      rippleStyle['-o-transform'] = scale;
+      rippleStyle.transform = scale;
+      rippleStyle.opacity = '1';
+      rippleStyle['-webkit-transition-duration'] = Effect.duration + 'ms';
+      rippleStyle['-moz-transition-duration'] = Effect.duration + 'ms';
+      rippleStyle['-o-transition-duration'] = Effect.duration + 'ms';
+      rippleStyle['transition-duration'] = Effect.duration + 'ms';
+      rippleStyle['-webkit-transition-timing-function'] = 'cubic-bezier(0.250, 0.460, 0.450, 0.940)';
+      rippleStyle['-moz-transition-timing-function'] = 'cubic-bezier(0.250, 0.460, 0.450, 0.940)';
+      rippleStyle['-o-transition-timing-function'] = 'cubic-bezier(0.250, 0.460, 0.450, 0.940)';
+      rippleStyle['transition-timing-function'] = 'cubic-bezier(0.250, 0.460, 0.450, 0.940)';
+      ripple.setAttribute('style', convertStyle(rippleStyle));
+    },
+    hide: function(e) {
+      TouchHandler.touchup(e);
+      var el = this;
+      var width = el.clientWidth * 1.4;
+      var ripple = null;
+      var ripples = el.getElementsByClassName('waves-ripple');
+      if (ripples.length > 0) {
+        ripple = ripples[ripples.length - 1];
+      } else {
+        return false;
+      }
+      var relativeX = ripple.getAttribute('data-x');
+      var relativeY = ripple.getAttribute('data-y');
+      var scale = ripple.getAttribute('data-scale');
+      var diff = Date.now() - Number(ripple.getAttribute('data-hold'));
+      var delay = 350 - diff;
+      if (delay < 0) {
+        delay = 0;
+      }
+      setTimeout(function() {
+        var style = {
+          'top': relativeY + 'px',
+          'left': relativeX + 'px',
+          'opacity': '0',
+          '-webkit-transition-duration': Effect.duration + 'ms',
+          '-moz-transition-duration': Effect.duration + 'ms',
+          '-o-transition-duration': Effect.duration + 'ms',
+          'transition-duration': Effect.duration + 'ms',
+          '-webkit-transform': scale,
+          '-moz-transform': scale,
+          '-ms-transform': scale,
+          '-o-transform': scale,
+          'transform': scale
+        };
+        ripple.setAttribute('style', convertStyle(style));
+        setTimeout(function() {
+          try {
+            el.removeChild(ripple);
+          } catch (e) {
+            return false;
+          }
+        }, Effect.duration);
+      }, delay);
+    },
+    wrapInput: function(elements) {
+      for (var a = 0; a < elements.length; a++) {
+        var el = elements[a];
+        if (el.tagName.toLowerCase() === 'input') {
+          var parent = el.parentNode;
+          if (parent.tagName.toLowerCase() === 'i' && parent.className.indexOf('waves-effect') !== -1) {
+            continue;
+          }
+          var wrapper = document.createElement('i');
+          wrapper.className = el.className + ' waves-input-wrapper';
+          var elementStyle = el.getAttribute('style');
+          if (!elementStyle) {
+            elementStyle = '';
+          }
+          wrapper.setAttribute('style', elementStyle);
+          el.className = 'waves-button-input';
+          el.removeAttribute('style');
+          parent.replaceChild(wrapper, el);
+          wrapper.appendChild(el);
+        }
+      }
+    }
+  };
+  var TouchHandler = {
+    touches: 0,
+    allowEvent: function(e) {
+      var allow = true;
+      if (e.type === 'touchstart') {
+        TouchHandler.touches += 1;
+      } else if (e.type === 'touchend' || e.type === 'touchcancel') {
+        setTimeout(function() {
+          if (TouchHandler.touches > 0) {
+            TouchHandler.touches -= 1;
+          }
+        }, 500);
+      } else if (e.type === 'mousedown' && TouchHandler.touches > 0) {
+        allow = false;
+      }
+      return allow;
+    },
+    touchup: function(e) {
+      TouchHandler.allowEvent(e);
+    }
+  };
+  function getWavesEffectElement(e) {
+    if (TouchHandler.allowEvent(e) === false) {
+      return null;
+    }
+    var element = null;
+    var target = e.target || e.srcElement;
+    while (target.parentElement !== null) {
+      if (!(target instanceof SVGElement) && target.className.indexOf('waves-effect') !== -1) {
+        element = target;
+        break;
+      } else if (target.classList.contains('waves-effect')) {
+        element = target;
+        break;
+      }
+      target = target.parentElement;
+    }
+    return element;
+  }
+  function showEffect(e) {
+    var element = getWavesEffectElement(e);
+    if (element !== null) {
+      Effect.show(e, element);
+      if ('ontouchstart' in window) {
+        element.addEventListener('touchend', Effect.hide, false);
+        element.addEventListener('touchcancel', Effect.hide, false);
+      }
+      element.addEventListener('mouseup', Effect.hide, false);
+      element.addEventListener('mouseleave', Effect.hide, false);
+    }
+  }
+  Waves.displayEffect = function(options) {
+    options = options || {};
+    if ('duration' in options) {
+      Effect.duration = options.duration;
+    }
+    Effect.wrapInput($$('.waves-effect'));
+    if ('ontouchstart' in window) {
+      document.body.addEventListener('touchstart', showEffect, false);
+    }
+    document.body.addEventListener('mousedown', showEffect, false);
+  };
+  Waves.attach = function(element) {
+    if (element.tagName.toLowerCase() === 'input') {
+      Effect.wrapInput([element]);
+      element = element.parentElement;
+    }
+    if ('ontouchstart' in window) {
+      element.addEventListener('touchstart', showEffect, false);
+    }
+    element.addEventListener('mousedown', showEffect, false);
+  };
+  document.addEventListener('DOMContentLoaded', function() {
+    Waves.displayEffect();
+  }, false);
+  return Waves;
 });
 
-System.registerDynamic("src/material_components/buttons.js", ["github:instagis/jquery_helper@0.2.1"], false, function(__require, __exports, __module) {
-  var _retrieveGlobal = System.get("@@global-helpers").prepareGlobal(__module.id, null, null);
-  (function() {
-    (function($) {
-      $(document).ready(function() {
-        $.fn.reverse = [].reverse;
-        $(document).on('mouseenter.fixedActionBtn', '.fixed-action-btn', function(e) {
-          var $this = $(this);
-          openFABMenu($this);
+_removeDefine();
+})();
+(function() {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/animation.js", ["github:instagis/jquery_helper@0.2.1"], function(jQuery) {
+  jQuery.extend(jQuery.easing, {easeInOutMaterial: function(x, t, b, c, d) {
+      if ((t /= d / 2) < 1)
+        return c / 2 * t * t + b;
+      return c / 4 * ((t -= 2) * t * t + 2) + b;
+    }});
+});
+
+_removeDefine();
+})();
+(function() {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/buttons.js", ["github:instagis/jquery_helper@0.2.1"], function($) {
+  $(document).ready(function() {
+    $.fn.reverse = [].reverse;
+    $(document).on('mouseenter.fixedActionBtn', '.fixed-action-btn', function(e) {
+      var $this = $(this);
+      openFABMenu($this);
+    });
+    $(document).on('mouseleave.fixedActionBtn', '.fixed-action-btn', function(e) {
+      var $this = $(this);
+      closeFABMenu($this);
+    });
+  });
+  $.fn.extend({
+    openFAB: function() {
+      var $this = $(this);
+      openFABMenu($this);
+    },
+    closeFAB: function() {
+      closeFABMenu($this);
+    }
+  });
+  var openFABMenu = function(btn) {
+    $this = btn;
+    if ($this.hasClass('active') === false) {
+      $this.addClass('active');
+      $this.find('ul .btn-floating').velocity({
+        scaleY: ".4",
+        scaleX: ".4",
+        translateY: "40px"
+      }, {duration: 0});
+      var time = 0;
+      $this.find('ul .btn-floating').reverse().each(function() {
+        $(this).velocity({
+          opacity: "1",
+          scaleX: "1",
+          scaleY: "1",
+          translateY: "0"
+        }, {
+          duration: 80,
+          delay: time
         });
-        $(document).on('mouseleave.fixedActionBtn', '.fixed-action-btn', function(e) {
-          var $this = $(this);
-          closeFABMenu($this);
-        });
+        time += 40;
       });
-      $.fn.extend({
-        openFAB: function() {
-          var $this = $(this);
-          openFABMenu($this);
-        },
-        closeFAB: function() {
-          closeFABMenu($this);
-        }
-      });
-      var openFABMenu = function(btn) {
-        $this = btn;
-        if ($this.hasClass('active') === false) {
-          $this.addClass('active');
-          $this.find('ul .btn-floating').velocity({
-            scaleY: ".4",
-            scaleX: ".4",
-            translateY: "40px"
-          }, {duration: 0});
-          var time = 0;
-          $this.find('ul .btn-floating').reverse().each(function() {
-            $(this).velocity({
-              opacity: "1",
-              scaleX: "1",
-              scaleY: "1",
-              translateY: "0"
-            }, {
-              duration: 80,
-              delay: time
-            });
-            time += 40;
+    }
+  };
+  var closeFABMenu = function(btn) {
+    $this = btn;
+    $this.removeClass('active');
+    var time = 0;
+    $this.find('ul .btn-floating').velocity("stop", true);
+    $this.find('ul .btn-floating').velocity({
+      opacity: "0",
+      scaleX: ".4",
+      scaleY: ".4",
+      translateY: "40px"
+    }, {duration: 80});
+  };
+});
+
+_removeDefine();
+})();
+(function() {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/cards.js", ["github:instagis/jquery_helper@0.2.1"], function($) {
+  $(document).ready(function() {
+    $(document).on('click.card', '.card', function(e) {
+      if ($(this).find('> .card-reveal').length) {
+        if ($(e.target).is($('.card-reveal .card-title')) || $(e.target).is($('.card-reveal .card-title i'))) {
+          $(this).find('.card-reveal').velocity({translateY: 0}, {
+            duration: 225,
+            queue: false,
+            easing: 'easeInOutQuad',
+            complete: function() {
+              $(this).css({display: 'none'});
+            }
+          });
+        } else if ($(e.target).is($('.card .activator')) || $(e.target).is($('.card .activator i'))) {
+          $(this).find('.card-reveal').css({display: 'block'}).velocity("stop", false).velocity({translateY: '-100%'}, {
+            duration: 300,
+            queue: false,
+            easing: 'easeInOutQuad'
           });
         }
-      };
-      var closeFABMenu = function(btn) {
-        $this = btn;
-        $this.removeClass('active');
-        var time = 0;
-        $this.find('ul .btn-floating').velocity("stop", true);
-        $this.find('ul .btn-floating').velocity({
-          opacity: "0",
-          scaleX: ".4",
-          scaleY: ".4",
-          translateY: "40px"
-        }, {duration: 80});
-      };
-    }(jQuery));
-  })();
-  return _retrieveGlobal();
-});
-
-System.registerDynamic("src/material_components/cards.js", ["github:instagis/jquery_helper@0.2.1"], false, function(__require, __exports, __module) {
-  var _retrieveGlobal = System.get("@@global-helpers").prepareGlobal(__module.id, null, null);
-  (function() {
-    (function($) {
-      $(document).ready(function() {
-        $(document).on('click.card', '.card', function(e) {
-          if ($(this).find('> .card-reveal').length) {
-            if ($(e.target).is($('.card-reveal .card-title')) || $(e.target).is($('.card-reveal .card-title i'))) {
-              $(this).find('.card-reveal').velocity({translateY: 0}, {
-                duration: 225,
-                queue: false,
-                easing: 'easeInOutQuad',
-                complete: function() {
-                  $(this).css({display: 'none'});
-                }
-              });
-            } else if ($(e.target).is($('.card .activator')) || $(e.target).is($('.card .activator i'))) {
-              $(this).find('.card-reveal').css({display: 'block'}).velocity("stop", false).velocity({translateY: '-100%'}, {
-                duration: 300,
-                queue: false,
-                easing: 'easeInOutQuad'
-              });
-            }
-          }
-        });
-      });
-    }(jQuery));
-  })();
-  return _retrieveGlobal();
-});
-
-System.registerDynamic("src/material_components/character_counter.js", ["github:instagis/jquery_helper@0.2.1"], false, function(__require, __exports, __module) {
-  var _retrieveGlobal = System.get("@@global-helpers").prepareGlobal(__module.id, null, null);
-  (function() {
-    (function($) {
-      $.fn.characterCounter = function() {
-        return this.each(function() {
-          var itHasLengthAttribute = $(this).attr('length') !== undefined;
-          if (itHasLengthAttribute) {
-            $(this).on('input', updateCounter);
-            $(this).on('focus', updateCounter);
-            $(this).on('blur', removeCounterElement);
-            addCounterElement($(this));
-          }
-        });
-      };
-      function updateCounter() {
-        var maxLength = +$(this).attr('length'),
-            actualLength = +$(this).val().length,
-            isValidLength = actualLength <= maxLength;
-        $(this).parent().find('span[class="character-counter"]').html(actualLength + '/' + maxLength);
-        addInputStyle(isValidLength, $(this));
-      }
-      function addCounterElement($input) {
-        var $counterElement = $('<span/>').addClass('character-counter').css('float', 'right').css('font-size', '12px').css('height', 1);
-        $input.parent().append($counterElement);
-      }
-      function removeCounterElement() {
-        $(this).parent().find('span[class="character-counter"]').html('');
-      }
-      function addInputStyle(isValidLength, $input) {
-        var inputHasInvalidClass = $input.hasClass('invalid');
-        if (isValidLength && inputHasInvalidClass) {
-          $input.removeClass('invalid');
-        } else if (!isValidLength && !inputHasInvalidClass) {
-          $input.removeClass('valid');
-          $input.addClass('invalid');
-        }
-      }
-      $(document).ready(function() {
-        $('input, textarea').characterCounter();
-      });
-    }(jQuery));
-  })();
-  return _retrieveGlobal();
-});
-
-System.registerDynamic("src/material_components/chips.js", ["github:instagis/jquery_helper@0.2.1"], false, function(__require, __exports, __module) {
-  var _retrieveGlobal = System.get("@@global-helpers").prepareGlobal(__module.id, null, null);
-  (function() {
-    (function($) {
-      $(document).ready(function() {
-        $(document).on('click.chip', '.chip .material-icons', function(e) {
-          $(this).parent().remove();
-        });
-      });
-    }(jQuery));
-  })();
-  return _retrieveGlobal();
-});
-
-System.registerDynamic("src/material_components/dropdown.js", ["github:instagis/jquery_helper@0.2.1"], false, function(__require, __exports, __module) {
-  var _retrieveGlobal = System.get("@@global-helpers").prepareGlobal(__module.id, null, null);
-  (function() {
-    (function($) {
-      $.fn.scrollTo = function(elem) {
-        $(this).scrollTop($(this).scrollTop() - $(this).offset().top + $(elem).offset().top);
-        return this;
-      };
-      $.fn.dropdown = function(option) {
-        var defaults = {
-          inDuration: 300,
-          outDuration: 225,
-          constrain_width: true,
-          hover: false,
-          gutter: 0,
-          belowOrigin: false,
-          alignment: 'left'
-        };
-        this.each(function() {
-          var origin = $(this);
-          var options = $.extend({}, defaults, option);
-          var activates = $("#" + origin.attr('data-activates'));
-          function updateOptions() {
-            if (origin.data('induration') !== undefined)
-              options.inDuration = origin.data('inDuration');
-            if (origin.data('outduration') !== undefined)
-              options.outDuration = origin.data('outDuration');
-            if (origin.data('constrainwidth') !== undefined)
-              options.constrain_width = origin.data('constrainwidth');
-            if (origin.data('hover') !== undefined)
-              options.hover = origin.data('hover');
-            if (origin.data('gutter') !== undefined)
-              options.gutter = origin.data('gutter');
-            if (origin.data('beloworigin') !== undefined)
-              options.belowOrigin = origin.data('beloworigin');
-            if (origin.data('alignment') !== undefined)
-              options.alignment = origin.data('alignment');
-          }
-          updateOptions();
-          origin.after(activates);
-          function placeDropdown() {
-            updateOptions();
-            activates.addClass('active');
-            if (options.constrain_width === true) {
-              activates.css('width', origin.outerWidth());
-            } else {
-              activates.css('white-space', 'nowrap');
-            }
-            var offset = 0;
-            if (options.belowOrigin === true) {
-              offset = origin.height();
-            }
-            var offsetLeft = origin.offset().left;
-            var activatesLeft,
-                width_difference,
-                gutter_spacing;
-            if (offsetLeft + activates.innerWidth() > $(window).width()) {
-              options.alignment = 'right';
-            } else if (offsetLeft - activates.innerWidth() + origin.innerWidth() < 0) {
-              options.alignment = 'left';
-            }
-            if (options.alignment === 'left') {
-              width_difference = 0;
-              gutter_spacing = options.gutter;
-              activatesLeft = origin.position().left + width_difference + gutter_spacing;
-              activates.css({left: activatesLeft});
-            } else if (options.alignment === 'right') {
-              var offsetRight = $(window).width() - offsetLeft - origin.innerWidth();
-              width_difference = 0;
-              gutter_spacing = options.gutter;
-              activatesLeft = ($(window).width() - origin.position().left - origin.innerWidth()) + gutter_spacing;
-              activates.css({right: activatesLeft});
-            }
-            activates.css({
-              position: 'absolute',
-              top: origin.position().top + offset
-            });
-            activates.stop(true, true).css('opacity', 0).slideDown({
-              queue: false,
-              duration: options.inDuration,
-              easing: 'easeOutCubic',
-              complete: function() {
-                $(this).css('height', '');
-              }
-            }).animate({opacity: 1}, {
-              queue: false,
-              duration: options.inDuration,
-              easing: 'easeOutSine'
-            });
-          }
-          function hideDropdown() {
-            activates.fadeOut(options.outDuration);
-            activates.removeClass('active');
-          }
-          if (options.hover) {
-            var open = false;
-            origin.unbind('click.' + origin.attr('id'));
-            origin.on('mouseenter', function(e) {
-              if (open === false) {
-                placeDropdown();
-                open = true;
-              }
-            });
-            origin.on('mouseleave', function(e) {
-              var toEl = e.toElement || e.relatedTarget;
-              if (!$(toEl).closest('.dropdown-content').is(activates)) {
-                activates.stop(true, true);
-                hideDropdown();
-                open = false;
-              }
-            });
-            activates.on('mouseleave', function(e) {
-              var toEl = e.toElement || e.relatedTarget;
-              if (!$(toEl).closest('.dropdown-button').is(origin)) {
-                activates.stop(true, true);
-                hideDropdown();
-                open = false;
-              }
-            });
-          } else {
-            origin.unbind('click.' + origin.attr('id'));
-            origin.bind('click.' + origin.attr('id'), function(e) {
-              if (origin[0] == e.currentTarget && ($(e.target).closest('.dropdown-content').length === 0)) {
-                e.preventDefault();
-                placeDropdown();
-              } else {
-                if (origin.hasClass('active')) {
-                  hideDropdown();
-                  $(document).unbind('click.' + activates.attr('id'));
-                }
-              }
-              if (activates.hasClass('active')) {
-                $(document).bind('click.' + activates.attr('id'), function(e) {
-                  if (!activates.is(e.target) && !origin.is(e.target) && (!origin.find(e.target).length > 0)) {
-                    hideDropdown();
-                    $(document).unbind('click.' + activates.attr('id'));
-                  }
-                });
-              }
-            });
-          }
-          origin.on('open', placeDropdown);
-          origin.on('close', hideDropdown);
-        });
-      };
-      $(document).ready(function() {
-        $('.dropdown-button').dropdown();
-      });
-    }(jQuery));
-  })();
-  return _retrieveGlobal();
-});
-
-System.registerDynamic("src/material_components/jquery.easing.1.3.js", ["github:instagis/jquery_helper@0.2.1"], false, function(__require, __exports, __module) {
-  var _retrieveGlobal = System.get("@@global-helpers").prepareGlobal(__module.id, null, null);
-  (function() {
-    jQuery.easing['jswing'] = jQuery.easing['swing'];
-    jQuery.extend(jQuery.easing, {
-      def: 'easeOutQuad',
-      swing: function(x, t, b, c, d) {
-        return jQuery.easing[jQuery.easing.def](x, t, b, c, d);
-      },
-      easeInQuad: function(x, t, b, c, d) {
-        return c * (t /= d) * t + b;
-      },
-      easeOutQuad: function(x, t, b, c, d) {
-        return -c * (t /= d) * (t - 2) + b;
-      },
-      easeInOutQuad: function(x, t, b, c, d) {
-        if ((t /= d / 2) < 1)
-          return c / 2 * t * t + b;
-        return -c / 2 * ((--t) * (t - 2) - 1) + b;
-      },
-      easeInCubic: function(x, t, b, c, d) {
-        return c * (t /= d) * t * t + b;
-      },
-      easeOutCubic: function(x, t, b, c, d) {
-        return c * ((t = t / d - 1) * t * t + 1) + b;
-      },
-      easeInOutCubic: function(x, t, b, c, d) {
-        if ((t /= d / 2) < 1)
-          return c / 2 * t * t * t + b;
-        return c / 2 * ((t -= 2) * t * t + 2) + b;
-      },
-      easeInQuart: function(x, t, b, c, d) {
-        return c * (t /= d) * t * t * t + b;
-      },
-      easeOutQuart: function(x, t, b, c, d) {
-        return -c * ((t = t / d - 1) * t * t * t - 1) + b;
-      },
-      easeInOutQuart: function(x, t, b, c, d) {
-        if ((t /= d / 2) < 1)
-          return c / 2 * t * t * t * t + b;
-        return -c / 2 * ((t -= 2) * t * t * t - 2) + b;
-      },
-      easeInQuint: function(x, t, b, c, d) {
-        return c * (t /= d) * t * t * t * t + b;
-      },
-      easeOutQuint: function(x, t, b, c, d) {
-        return c * ((t = t / d - 1) * t * t * t * t + 1) + b;
-      },
-      easeInOutQuint: function(x, t, b, c, d) {
-        if ((t /= d / 2) < 1)
-          return c / 2 * t * t * t * t * t + b;
-        return c / 2 * ((t -= 2) * t * t * t * t + 2) + b;
-      },
-      easeInSine: function(x, t, b, c, d) {
-        return -c * Math.cos(t / d * (Math.PI / 2)) + c + b;
-      },
-      easeOutSine: function(x, t, b, c, d) {
-        return c * Math.sin(t / d * (Math.PI / 2)) + b;
-      },
-      easeInOutSine: function(x, t, b, c, d) {
-        return -c / 2 * (Math.cos(Math.PI * t / d) - 1) + b;
-      },
-      easeInExpo: function(x, t, b, c, d) {
-        return (t == 0) ? b : c * Math.pow(2, 10 * (t / d - 1)) + b;
-      },
-      easeOutExpo: function(x, t, b, c, d) {
-        return (t == d) ? b + c : c * (-Math.pow(2, -10 * t / d) + 1) + b;
-      },
-      easeInOutExpo: function(x, t, b, c, d) {
-        if (t == 0)
-          return b;
-        if (t == d)
-          return b + c;
-        if ((t /= d / 2) < 1)
-          return c / 2 * Math.pow(2, 10 * (t - 1)) + b;
-        return c / 2 * (-Math.pow(2, -10 * --t) + 2) + b;
-      },
-      easeInCirc: function(x, t, b, c, d) {
-        return -c * (Math.sqrt(1 - (t /= d) * t) - 1) + b;
-      },
-      easeOutCirc: function(x, t, b, c, d) {
-        return c * Math.sqrt(1 - (t = t / d - 1) * t) + b;
-      },
-      easeInOutCirc: function(x, t, b, c, d) {
-        if ((t /= d / 2) < 1)
-          return -c / 2 * (Math.sqrt(1 - t * t) - 1) + b;
-        return c / 2 * (Math.sqrt(1 - (t -= 2) * t) + 1) + b;
-      },
-      easeInElastic: function(x, t, b, c, d) {
-        var s = 1.70158;
-        var p = 0;
-        var a = c;
-        if (t == 0)
-          return b;
-        if ((t /= d) == 1)
-          return b + c;
-        if (!p)
-          p = d * .3;
-        if (a < Math.abs(c)) {
-          a = c;
-          var s = p / 4;
-        } else
-          var s = p / (2 * Math.PI) * Math.asin(c / a);
-        return -(a * Math.pow(2, 10 * (t -= 1)) * Math.sin((t * d - s) * (2 * Math.PI) / p)) + b;
-      },
-      easeOutElastic: function(x, t, b, c, d) {
-        var s = 1.70158;
-        var p = 0;
-        var a = c;
-        if (t == 0)
-          return b;
-        if ((t /= d) == 1)
-          return b + c;
-        if (!p)
-          p = d * .3;
-        if (a < Math.abs(c)) {
-          a = c;
-          var s = p / 4;
-        } else
-          var s = p / (2 * Math.PI) * Math.asin(c / a);
-        return a * Math.pow(2, -10 * t) * Math.sin((t * d - s) * (2 * Math.PI) / p) + c + b;
-      },
-      easeInOutElastic: function(x, t, b, c, d) {
-        var s = 1.70158;
-        var p = 0;
-        var a = c;
-        if (t == 0)
-          return b;
-        if ((t /= d / 2) == 2)
-          return b + c;
-        if (!p)
-          p = d * (.3 * 1.5);
-        if (a < Math.abs(c)) {
-          a = c;
-          var s = p / 4;
-        } else
-          var s = p / (2 * Math.PI) * Math.asin(c / a);
-        if (t < 1)
-          return -.5 * (a * Math.pow(2, 10 * (t -= 1)) * Math.sin((t * d - s) * (2 * Math.PI) / p)) + b;
-        return a * Math.pow(2, -10 * (t -= 1)) * Math.sin((t * d - s) * (2 * Math.PI) / p) * .5 + c + b;
-      },
-      easeInBack: function(x, t, b, c, d, s) {
-        if (s == undefined)
-          s = 1.70158;
-        return c * (t /= d) * t * ((s + 1) * t - s) + b;
-      },
-      easeOutBack: function(x, t, b, c, d, s) {
-        if (s == undefined)
-          s = 1.70158;
-        return c * ((t = t / d - 1) * t * ((s + 1) * t + s) + 1) + b;
-      },
-      easeInOutBack: function(x, t, b, c, d, s) {
-        if (s == undefined)
-          s = 1.70158;
-        if ((t /= d / 2) < 1)
-          return c / 2 * (t * t * (((s *= (1.525)) + 1) * t - s)) + b;
-        return c / 2 * ((t -= 2) * t * (((s *= (1.525)) + 1) * t + s) + 2) + b;
-      },
-      easeInBounce: function(x, t, b, c, d) {
-        return c - jQuery.easing.easeOutBounce(x, d - t, 0, c, d) + b;
-      },
-      easeOutBounce: function(x, t, b, c, d) {
-        if ((t /= d) < (1 / 2.75)) {
-          return c * (7.5625 * t * t) + b;
-        } else if (t < (2 / 2.75)) {
-          return c * (7.5625 * (t -= (1.5 / 2.75)) * t + .75) + b;
-        } else if (t < (2.5 / 2.75)) {
-          return c * (7.5625 * (t -= (2.25 / 2.75)) * t + .9375) + b;
-        } else {
-          return c * (7.5625 * (t -= (2.625 / 2.75)) * t + .984375) + b;
-        }
-      },
-      easeInOutBounce: function(x, t, b, c, d) {
-        if (t < d / 2)
-          return jQuery.easing.easeInBounce(x, t * 2, 0, c, d) * .5 + b;
-        return jQuery.easing.easeOutBounce(x, t * 2 - d, 0, c, d) * .5 + c * .5 + b;
       }
     });
-  })();
-  return _retrieveGlobal();
+  });
 });
 
+_removeDefine();
+})();
+(function() {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/character_counter.js", ["github:instagis/jquery_helper@0.2.1"], function($) {
+  $.fn.characterCounter = function() {
+    return this.each(function() {
+      var itHasLengthAttribute = $(this).attr('length') !== undefined;
+      if (itHasLengthAttribute) {
+        $(this).on('input', updateCounter);
+        $(this).on('focus', updateCounter);
+        $(this).on('blur', removeCounterElement);
+        addCounterElement($(this));
+      }
+    });
+  };
+  function updateCounter() {
+    var maxLength = +$(this).attr('length'),
+        actualLength = +$(this).val().length,
+        isValidLength = actualLength <= maxLength;
+    $(this).parent().find('span[class="character-counter"]').html(actualLength + '/' + maxLength);
+    addInputStyle(isValidLength, $(this));
+  }
+  function addCounterElement($input) {
+    var $counterElement = $('<span/>').addClass('character-counter').css('float', 'right').css('font-size', '12px').css('height', 1);
+    $input.parent().append($counterElement);
+  }
+  function removeCounterElement() {
+    $(this).parent().find('span[class="character-counter"]').html('');
+  }
+  function addInputStyle(isValidLength, $input) {
+    var inputHasInvalidClass = $input.hasClass('invalid');
+    if (isValidLength && inputHasInvalidClass) {
+      $input.removeClass('invalid');
+    } else if (!isValidLength && !inputHasInvalidClass) {
+      $input.removeClass('valid');
+      $input.addClass('invalid');
+    }
+  }
+  $(document).ready(function() {
+    $('input, textarea').characterCounter();
+  });
+});
+
+_removeDefine();
+})();
+(function() {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/chips.js", ["github:instagis/jquery_helper@0.2.1"], function($) {
+  $(document).ready(function() {
+    $(document).on('click.chip', '.chip .material-icons', function(e) {
+      $(this).parent().remove();
+    });
+  });
+});
+
+_removeDefine();
+})();
+(function() {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/dropdown.js", ["github:instagis/jquery_helper@0.2.1"], function($) {
+  $.fn.scrollTo = function(elem) {
+    $(this).scrollTop($(this).scrollTop() - $(this).offset().top + $(elem).offset().top);
+    return this;
+  };
+  $.fn.dropdown = function(option) {
+    var defaults = {
+      inDuration: 300,
+      outDuration: 225,
+      constrain_width: true,
+      hover: false,
+      gutter: 0,
+      belowOrigin: false,
+      alignment: 'left'
+    };
+    this.each(function() {
+      var origin = $(this);
+      var options = $.extend({}, defaults, option);
+      var activates = $("#" + origin.attr('data-activates'));
+      function updateOptions() {
+        if (origin.data('induration') !== undefined)
+          options.inDuration = origin.data('inDuration');
+        if (origin.data('outduration') !== undefined)
+          options.outDuration = origin.data('outDuration');
+        if (origin.data('constrainwidth') !== undefined)
+          options.constrain_width = origin.data('constrainwidth');
+        if (origin.data('hover') !== undefined)
+          options.hover = origin.data('hover');
+        if (origin.data('gutter') !== undefined)
+          options.gutter = origin.data('gutter');
+        if (origin.data('beloworigin') !== undefined)
+          options.belowOrigin = origin.data('beloworigin');
+        if (origin.data('alignment') !== undefined)
+          options.alignment = origin.data('alignment');
+      }
+      updateOptions();
+      origin.after(activates);
+      function placeDropdown() {
+        updateOptions();
+        activates.addClass('active');
+        if (options.constrain_width === true) {
+          activates.css('width', origin.outerWidth());
+        } else {
+          activates.css('white-space', 'nowrap');
+        }
+        var offset = 0;
+        if (options.belowOrigin === true) {
+          offset = origin.height();
+        }
+        var offsetLeft = origin.offset().left;
+        var activatesLeft,
+            width_difference,
+            gutter_spacing;
+        if (offsetLeft + activates.innerWidth() > $(window).width()) {
+          options.alignment = 'right';
+        } else if (offsetLeft - activates.innerWidth() + origin.innerWidth() < 0) {
+          options.alignment = 'left';
+        }
+        if (options.alignment === 'left') {
+          width_difference = 0;
+          gutter_spacing = options.gutter;
+          activatesLeft = origin.position().left + width_difference + gutter_spacing;
+          activates.css({left: activatesLeft});
+        } else if (options.alignment === 'right') {
+          var offsetRight = $(window).width() - offsetLeft - origin.innerWidth();
+          width_difference = 0;
+          gutter_spacing = options.gutter;
+          activatesLeft = ($(window).width() - origin.position().left - origin.innerWidth()) + gutter_spacing;
+          activates.css({right: activatesLeft});
+        }
+        activates.css({
+          position: 'absolute',
+          top: origin.position().top + offset
+        });
+        activates.stop(true, true).css('opacity', 0).slideDown({
+          queue: false,
+          duration: options.inDuration,
+          easing: 'easeOutCubic',
+          complete: function() {
+            $(this).css('height', '');
+          }
+        }).animate({opacity: 1}, {
+          queue: false,
+          duration: options.inDuration,
+          easing: 'easeOutSine'
+        });
+      }
+      function hideDropdown() {
+        activates.fadeOut(options.outDuration);
+        activates.removeClass('active');
+      }
+      if (options.hover) {
+        var open = false;
+        origin.unbind('click.' + origin.attr('id'));
+        origin.on('mouseenter', function(e) {
+          if (open === false) {
+            placeDropdown();
+            open = true;
+          }
+        });
+        origin.on('mouseleave', function(e) {
+          var toEl = e.toElement || e.relatedTarget;
+          if (!$(toEl).closest('.dropdown-content').is(activates)) {
+            activates.stop(true, true);
+            hideDropdown();
+            open = false;
+          }
+        });
+        activates.on('mouseleave', function(e) {
+          var toEl = e.toElement || e.relatedTarget;
+          if (!$(toEl).closest('.dropdown-button').is(origin)) {
+            activates.stop(true, true);
+            hideDropdown();
+            open = false;
+          }
+        });
+      } else {
+        origin.unbind('click.' + origin.attr('id'));
+        origin.bind('click.' + origin.attr('id'), function(e) {
+          if (origin[0] == e.currentTarget && ($(e.target).closest('.dropdown-content').length === 0)) {
+            e.preventDefault();
+            placeDropdown();
+          } else {
+            if (origin.hasClass('active')) {
+              hideDropdown();
+              $(document).unbind('click.' + activates.attr('id'));
+            }
+          }
+          if (activates.hasClass('active')) {
+            $(document).bind('click.' + activates.attr('id'), function(e) {
+              if (!activates.is(e.target) && !origin.is(e.target) && (!origin.find(e.target).length > 0)) {
+                hideDropdown();
+                $(document).unbind('click.' + activates.attr('id'));
+              }
+            });
+          }
+        });
+      }
+      origin.on('open', placeDropdown);
+      origin.on('close', hideDropdown);
+    });
+  };
+  $(document).ready(function() {
+    $('.dropdown-button').dropdown();
+  });
+});
+
+_removeDefine();
+})();
+(function() {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/jquery.easing.1.3.js", ["github:instagis/jquery_helper@0.2.1"], function(jQuery) {
+  jQuery.easing['jswing'] = jQuery.easing['swing'];
+  jQuery.extend(jQuery.easing, {
+    def: 'easeOutQuad',
+    swing: function(x, t, b, c, d) {
+      return jQuery.easing[jQuery.easing.def](x, t, b, c, d);
+    },
+    easeInQuad: function(x, t, b, c, d) {
+      return c * (t /= d) * t + b;
+    },
+    easeOutQuad: function(x, t, b, c, d) {
+      return -c * (t /= d) * (t - 2) + b;
+    },
+    easeInOutQuad: function(x, t, b, c, d) {
+      if ((t /= d / 2) < 1)
+        return c / 2 * t * t + b;
+      return -c / 2 * ((--t) * (t - 2) - 1) + b;
+    },
+    easeInCubic: function(x, t, b, c, d) {
+      return c * (t /= d) * t * t + b;
+    },
+    easeOutCubic: function(x, t, b, c, d) {
+      return c * ((t = t / d - 1) * t * t + 1) + b;
+    },
+    easeInOutCubic: function(x, t, b, c, d) {
+      if ((t /= d / 2) < 1)
+        return c / 2 * t * t * t + b;
+      return c / 2 * ((t -= 2) * t * t + 2) + b;
+    },
+    easeInQuart: function(x, t, b, c, d) {
+      return c * (t /= d) * t * t * t + b;
+    },
+    easeOutQuart: function(x, t, b, c, d) {
+      return -c * ((t = t / d - 1) * t * t * t - 1) + b;
+    },
+    easeInOutQuart: function(x, t, b, c, d) {
+      if ((t /= d / 2) < 1)
+        return c / 2 * t * t * t * t + b;
+      return -c / 2 * ((t -= 2) * t * t * t - 2) + b;
+    },
+    easeInQuint: function(x, t, b, c, d) {
+      return c * (t /= d) * t * t * t * t + b;
+    },
+    easeOutQuint: function(x, t, b, c, d) {
+      return c * ((t = t / d - 1) * t * t * t * t + 1) + b;
+    },
+    easeInOutQuint: function(x, t, b, c, d) {
+      if ((t /= d / 2) < 1)
+        return c / 2 * t * t * t * t * t + b;
+      return c / 2 * ((t -= 2) * t * t * t * t + 2) + b;
+    },
+    easeInSine: function(x, t, b, c, d) {
+      return -c * Math.cos(t / d * (Math.PI / 2)) + c + b;
+    },
+    easeOutSine: function(x, t, b, c, d) {
+      return c * Math.sin(t / d * (Math.PI / 2)) + b;
+    },
+    easeInOutSine: function(x, t, b, c, d) {
+      return -c / 2 * (Math.cos(Math.PI * t / d) - 1) + b;
+    },
+    easeInExpo: function(x, t, b, c, d) {
+      return (t == 0) ? b : c * Math.pow(2, 10 * (t / d - 1)) + b;
+    },
+    easeOutExpo: function(x, t, b, c, d) {
+      return (t == d) ? b + c : c * (-Math.pow(2, -10 * t / d) + 1) + b;
+    },
+    easeInOutExpo: function(x, t, b, c, d) {
+      if (t == 0)
+        return b;
+      if (t == d)
+        return b + c;
+      if ((t /= d / 2) < 1)
+        return c / 2 * Math.pow(2, 10 * (t - 1)) + b;
+      return c / 2 * (-Math.pow(2, -10 * --t) + 2) + b;
+    },
+    easeInCirc: function(x, t, b, c, d) {
+      return -c * (Math.sqrt(1 - (t /= d) * t) - 1) + b;
+    },
+    easeOutCirc: function(x, t, b, c, d) {
+      return c * Math.sqrt(1 - (t = t / d - 1) * t) + b;
+    },
+    easeInOutCirc: function(x, t, b, c, d) {
+      if ((t /= d / 2) < 1)
+        return -c / 2 * (Math.sqrt(1 - t * t) - 1) + b;
+      return c / 2 * (Math.sqrt(1 - (t -= 2) * t) + 1) + b;
+    },
+    easeInElastic: function(x, t, b, c, d) {
+      var s = 1.70158;
+      var p = 0;
+      var a = c;
+      if (t == 0)
+        return b;
+      if ((t /= d) == 1)
+        return b + c;
+      if (!p)
+        p = d * .3;
+      if (a < Math.abs(c)) {
+        a = c;
+        var s = p / 4;
+      } else
+        var s = p / (2 * Math.PI) * Math.asin(c / a);
+      return -(a * Math.pow(2, 10 * (t -= 1)) * Math.sin((t * d - s) * (2 * Math.PI) / p)) + b;
+    },
+    easeOutElastic: function(x, t, b, c, d) {
+      var s = 1.70158;
+      var p = 0;
+      var a = c;
+      if (t == 0)
+        return b;
+      if ((t /= d) == 1)
+        return b + c;
+      if (!p)
+        p = d * .3;
+      if (a < Math.abs(c)) {
+        a = c;
+        var s = p / 4;
+      } else
+        var s = p / (2 * Math.PI) * Math.asin(c / a);
+      return a * Math.pow(2, -10 * t) * Math.sin((t * d - s) * (2 * Math.PI) / p) + c + b;
+    },
+    easeInOutElastic: function(x, t, b, c, d) {
+      var s = 1.70158;
+      var p = 0;
+      var a = c;
+      if (t == 0)
+        return b;
+      if ((t /= d / 2) == 2)
+        return b + c;
+      if (!p)
+        p = d * (.3 * 1.5);
+      if (a < Math.abs(c)) {
+        a = c;
+        var s = p / 4;
+      } else
+        var s = p / (2 * Math.PI) * Math.asin(c / a);
+      if (t < 1)
+        return -.5 * (a * Math.pow(2, 10 * (t -= 1)) * Math.sin((t * d - s) * (2 * Math.PI) / p)) + b;
+      return a * Math.pow(2, -10 * (t -= 1)) * Math.sin((t * d - s) * (2 * Math.PI) / p) * .5 + c + b;
+    },
+    easeInBack: function(x, t, b, c, d, s) {
+      if (s == undefined)
+        s = 1.70158;
+      return c * (t /= d) * t * ((s + 1) * t - s) + b;
+    },
+    easeOutBack: function(x, t, b, c, d, s) {
+      if (s == undefined)
+        s = 1.70158;
+      return c * ((t = t / d - 1) * t * ((s + 1) * t + s) + 1) + b;
+    },
+    easeInOutBack: function(x, t, b, c, d, s) {
+      if (s == undefined)
+        s = 1.70158;
+      if ((t /= d / 2) < 1)
+        return c / 2 * (t * t * (((s *= (1.525)) + 1) * t - s)) + b;
+      return c / 2 * ((t -= 2) * t * (((s *= (1.525)) + 1) * t + s) + 2) + b;
+    },
+    easeInBounce: function(x, t, b, c, d) {
+      return c - jQuery.easing.easeOutBounce(x, d - t, 0, c, d) + b;
+    },
+    easeOutBounce: function(x, t, b, c, d) {
+      if ((t /= d) < (1 / 2.75)) {
+        return c * (7.5625 * t * t) + b;
+      } else if (t < (2 / 2.75)) {
+        return c * (7.5625 * (t -= (1.5 / 2.75)) * t + .75) + b;
+      } else if (t < (2.5 / 2.75)) {
+        return c * (7.5625 * (t -= (2.25 / 2.75)) * t + .9375) + b;
+      } else {
+        return c * (7.5625 * (t -= (2.625 / 2.75)) * t + .984375) + b;
+      }
+    },
+    easeInOutBounce: function(x, t, b, c, d) {
+      if (t < d / 2)
+        return jQuery.easing.easeInBounce(x, t * 2, 0, c, d) * .5 + b;
+      return jQuery.easing.easeOutBounce(x, t * 2 - d, 0, c, d) * .5 + c * .5 + b;
+    }
+  });
+});
+
+_removeDefine();
+})();
 System.registerDynamic("npm:process@0.11.2/browser", [], true, function($__require, exports, module) {
   ;
   var global = this,
@@ -4265,273 +4486,254 @@ var _removeDefine = System.get("@@amd-helpers").createDefine();
 
 _removeDefine();
 })();
-System.registerDynamic("src/material_components/leanModal.js", ["github:instagis/jquery_helper@0.2.1"], false, function(__require, __exports, __module) {
-  var _retrieveGlobal = System.get("@@global-helpers").prepareGlobal(__module.id, null, null);
-  (function() {
-    (function($) {
-      var _stack = 0,
-          _lastID = 0,
-          _generateID = function() {
-            _lastID++;
-            return 'materialize-lean-overlay-' + _lastID;
-          };
-      $.fn.extend({openModal: function(options) {
-          $('body').css('overflow', 'hidden');
-          var defaults = {
-            opacity: 0.5,
-            in_duration: 350,
-            out_duration: 250,
-            ready: undefined,
-            complete: undefined,
-            dismissible: true,
-            starting_top: '4%'
-          },
-              overlayID = _generateID(),
-              $modal = $(this),
-              $overlay = $('<div class="lean-overlay"></div>'),
-              lStack = (++_stack);
-          $overlay.attr('id', overlayID).css('z-index', 1000 + lStack * 2);
-          $modal.data('overlay-id', overlayID).css('z-index', 1000 + lStack * 2 + 1);
-          $("body").append($overlay);
-          options = $.extend(defaults, options);
-          if (options.dismissible) {
-            $overlay.click(function() {
-              $modal.closeModal(options);
-            });
-            $(document).on('keyup.leanModal' + overlayID, function(e) {
-              if (e.keyCode === 27) {
-                $modal.closeModal(options);
-              }
-            });
-          }
-          $modal.find(".modal-close").on('click.close', function(e) {
+(function() {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/leanModal.js", ["github:instagis/jquery_helper@0.2.1"], function($) {
+  var _stack = 0,
+      _lastID = 0,
+      _generateID = function() {
+        _lastID++;
+        return 'materialize-lean-overlay-' + _lastID;
+      };
+  $.fn.extend({openModal: function(options) {
+      $('body').css('overflow', 'hidden');
+      var defaults = {
+        opacity: 0.5,
+        in_duration: 350,
+        out_duration: 250,
+        ready: undefined,
+        complete: undefined,
+        dismissible: true,
+        starting_top: '4%'
+      },
+          overlayID = _generateID(),
+          $modal = $(this),
+          $overlay = $('<div class="lean-overlay"></div>'),
+          lStack = (++_stack);
+      $overlay.attr('id', overlayID).css('z-index', 1000 + lStack * 2);
+      $modal.data('overlay-id', overlayID).css('z-index', 1000 + lStack * 2 + 1);
+      $("body").append($overlay);
+      options = $.extend(defaults, options);
+      if (options.dismissible) {
+        $overlay.click(function() {
+          $modal.closeModal(options);
+        });
+        $(document).on('keyup.leanModal' + overlayID, function(e) {
+          if (e.keyCode === 27) {
             $modal.closeModal(options);
-          });
-          $overlay.css({
-            display: "block",
-            opacity: 0
-          });
-          $modal.css({
-            display: "block",
-            opacity: 0
-          });
-          $overlay.velocity({opacity: options.opacity}, {
-            duration: options.in_duration,
-            queue: false,
-            ease: "easeOutCubic"
-          });
-          $modal.data('associated-overlay', $overlay[0]);
-          if ($modal.hasClass('bottom-sheet')) {
-            $modal.velocity({
-              bottom: "0",
-              opacity: 1
-            }, {
-              duration: options.in_duration,
-              queue: false,
-              ease: "easeOutCubic",
-              complete: function() {
-                if (typeof(options.ready) === "function") {
-                  options.ready();
-                }
-              }
-            });
-          } else {
-            $.Velocity.hook($modal, "scaleX", 0.7);
-            $modal.css({top: options.starting_top});
-            $modal.velocity({
-              top: "10%",
-              opacity: 1,
-              scaleX: '1'
-            }, {
-              duration: options.in_duration,
-              queue: false,
-              ease: "easeOutCubic",
-              complete: function() {
-                if (typeof(options.ready) === "function") {
-                  options.ready();
-                }
-              }
-            });
           }
-        }});
-      $.fn.extend({closeModal: function(options) {
-          var defaults = {
-            out_duration: 250,
-            complete: undefined
-          },
-              $modal = $(this),
-              overlayID = $modal.data('overlay-id'),
-              $overlay = $('#' + overlayID);
-          options = $.extend(defaults, options);
-          $('body').css('overflow', '');
-          $modal.find('.modal-close').off('click.close');
-          $(document).off('keyup.leanModal' + overlayID);
-          $overlay.velocity({opacity: 0}, {
-            duration: options.out_duration,
-            queue: false,
-            ease: "easeOutQuart"
-          });
-          if ($modal.hasClass('bottom-sheet')) {
-            $modal.velocity({
-              bottom: "-100%",
-              opacity: 0
-            }, {
-              duration: options.out_duration,
-              queue: false,
-              ease: "easeOutCubic",
-              complete: function() {
-                $overlay.css({display: "none"});
-                if (typeof(options.complete) === "function") {
-                  options.complete();
-                }
-                $overlay.remove();
-                _stack--;
-              }
-            });
-          } else {
-            $modal.velocity({
-              top: options.starting_top,
-              opacity: 0,
-              scaleX: 0.7
-            }, {
-              duration: options.out_duration,
-              complete: function() {
-                $(this).css('display', 'none');
-                if (typeof(options.complete) === "function") {
-                  options.complete();
-                }
-                $overlay.remove();
-                _stack--;
-              }
-            });
+        });
+      }
+      $modal.find(".modal-close").on('click.close', function(e) {
+        $modal.closeModal(options);
+      });
+      $overlay.css({
+        display: "block",
+        opacity: 0
+      });
+      $modal.css({
+        display: "block",
+        opacity: 0
+      });
+      $overlay.velocity({opacity: options.opacity}, {
+        duration: options.in_duration,
+        queue: false,
+        ease: "easeOutCubic"
+      });
+      $modal.data('associated-overlay', $overlay[0]);
+      if ($modal.hasClass('bottom-sheet')) {
+        $modal.velocity({
+          bottom: "0",
+          opacity: 1
+        }, {
+          duration: options.in_duration,
+          queue: false,
+          ease: "easeOutCubic",
+          complete: function() {
+            if (typeof(options.ready) === "function") {
+              options.ready();
+            }
           }
-        }});
-      $.fn.extend({leanModal: function(option) {
-          return this.each(function() {
-            var defaults = {starting_top: '4%'},
-                options = $.extend(defaults, option);
-            $(this).click(function(e) {
-              options.starting_top = ($(this).offset().top - $(window).scrollTop()) / 1.15;
-              var modal_id = $(this).attr("href") || '#' + $(this).data('target');
-              $(modal_id).openModal(options);
-              e.preventDefault();
-            });
-          });
-        }});
-    })(jQuery);
-  })();
-  return _retrieveGlobal();
+        });
+      } else {
+        $.Velocity.hook($modal, "scaleX", 0.7);
+        $modal.css({top: options.starting_top});
+        $modal.velocity({
+          top: "10%",
+          opacity: 1,
+          scaleX: '1'
+        }, {
+          duration: options.in_duration,
+          queue: false,
+          ease: "easeOutCubic",
+          complete: function() {
+            if (typeof(options.ready) === "function") {
+              options.ready();
+            }
+          }
+        });
+      }
+    }});
+  $.fn.extend({closeModal: function(options) {
+      var defaults = {
+        out_duration: 250,
+        complete: undefined
+      },
+          $modal = $(this),
+          overlayID = $modal.data('overlay-id'),
+          $overlay = $('#' + overlayID);
+      options = $.extend(defaults, options);
+      $('body').css('overflow', '');
+      $modal.find('.modal-close').off('click.close');
+      $(document).off('keyup.leanModal' + overlayID);
+      $overlay.velocity({opacity: 0}, {
+        duration: options.out_duration,
+        queue: false,
+        ease: "easeOutQuart"
+      });
+      if ($modal.hasClass('bottom-sheet')) {
+        $modal.velocity({
+          bottom: "-100%",
+          opacity: 0
+        }, {
+          duration: options.out_duration,
+          queue: false,
+          ease: "easeOutCubic",
+          complete: function() {
+            $overlay.css({display: "none"});
+            if (typeof(options.complete) === "function") {
+              options.complete();
+            }
+            $overlay.remove();
+            _stack--;
+          }
+        });
+      } else {
+        $modal.velocity({
+          top: options.starting_top,
+          opacity: 0,
+          scaleX: 0.7
+        }, {
+          duration: options.out_duration,
+          complete: function() {
+            $(this).css('display', 'none');
+            if (typeof(options.complete) === "function") {
+              options.complete();
+            }
+            $overlay.remove();
+            _stack--;
+          }
+        });
+      }
+    }});
+  $.fn.extend({leanModal: function(option) {
+      return this.each(function() {
+        var defaults = {starting_top: '4%'},
+            options = $.extend(defaults, option);
+        $(this).click(function(e) {
+          options.starting_top = ($(this).offset().top - $(window).scrollTop()) / 1.15;
+          var modal_id = $(this).attr("href") || '#' + $(this).data('target');
+          $(modal_id).openModal(options);
+          e.preventDefault();
+        });
+      });
+    }});
 });
 
-System.registerDynamic("src/material_components/materialbox.js", ["github:instagis/jquery_helper@0.2.1"], false, function(__require, __exports, __module) {
-  var _retrieveGlobal = System.get("@@global-helpers").prepareGlobal(__module.id, null, null);
-  (function() {
-    (function($) {
-      $.fn.materialbox = function() {
-        return this.each(function() {
-          if ($(this).hasClass('initialized')) {
-            return;
-          }
-          $(this).addClass('initialized');
-          var overlayActive = false;
-          var doneAnimating = true;
-          var inDuration = 275;
-          var outDuration = 200;
-          var origin = $(this);
-          var placeholder = $('<div></div>').addClass('material-placeholder');
-          var originalWidth = 0;
-          var originalHeight = 0;
-          origin.wrap(placeholder);
-          origin.on('click', function() {
-            var placeholder = origin.parent('.material-placeholder');
-            var windowWidth = window.innerWidth;
-            var windowHeight = window.innerHeight;
-            var originalWidth = origin.width();
-            var originalHeight = origin.height();
-            if (doneAnimating === false) {
-              returnToOriginal();
-              return false;
-            } else if (overlayActive && doneAnimating === true) {
-              returnToOriginal();
-              return false;
-            }
-            doneAnimating = false;
-            origin.addClass('active');
-            overlayActive = true;
-            placeholder.css({
-              width: placeholder[0].getBoundingClientRect().width,
-              height: placeholder[0].getBoundingClientRect().height,
-              position: 'relative',
-              top: 0,
-              left: 0
-            });
-            origin.css({
-              position: 'absolute',
-              'z-index': 1000
-            }).data('width', originalWidth).data('height', originalHeight);
-            var overlay = $('<div id="materialbox-overlay"></div>').css({opacity: 0}).click(function() {
-              if (doneAnimating === true)
-                returnToOriginal();
-            });
-            $('body').append(overlay);
-            overlay.velocity({opacity: 1}, {
-              duration: inDuration,
-              queue: false,
-              easing: 'easeOutQuad'
-            });
-            if (origin.data('caption') !== "") {
-              var $photo_caption = $('<div class="materialbox-caption"></div>');
-              $photo_caption.text(origin.data('caption'));
-              $('body').append($photo_caption);
-              $photo_caption.css({"display": "inline"});
-              $photo_caption.velocity({opacity: 1}, {
-                duration: inDuration,
-                queue: false,
-                easing: 'easeOutQuad'
-              });
-            }
-            var ratio = 0;
-            var widthPercent = originalWidth / windowWidth;
-            var heightPercent = originalHeight / windowHeight;
-            var newWidth = 0;
-            var newHeight = 0;
-            if (widthPercent > heightPercent) {
-              ratio = originalHeight / originalWidth;
-              newWidth = windowWidth * 0.9;
-              newHeight = windowWidth * 0.9 * ratio;
-            } else {
-              ratio = originalWidth / originalHeight;
-              newWidth = (windowHeight * 0.9) * ratio;
-              newHeight = windowHeight * 0.9;
-            }
-            if (origin.hasClass('responsive-img')) {
-              origin.velocity({
-                'max-width': newWidth,
-                'width': originalWidth
-              }, {
-                duration: 0,
-                queue: false,
-                complete: function() {
-                  origin.css({
-                    left: 0,
-                    top: 0
-                  }).velocity({
-                    height: newHeight,
-                    width: newWidth,
-                    left: $(document).scrollLeft() + windowWidth / 2 - origin.parent('.material-placeholder').offset().left - newWidth / 2,
-                    top: $(document).scrollTop() + windowHeight / 2 - origin.parent('.material-placeholder').offset().top - newHeight / 2
-                  }, {
-                    duration: inDuration,
-                    queue: false,
-                    easing: 'easeOutQuad',
-                    complete: function() {
-                      doneAnimating = true;
-                    }
-                  });
-                }
-              });
-            } else {
-              origin.css('left', 0).css('top', 0).velocity({
+_removeDefine();
+})();
+(function() {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/materialbox.js", ["github:instagis/jquery_helper@0.2.1"], function($) {
+  $.fn.materialbox = function() {
+    return this.each(function() {
+      if ($(this).hasClass('initialized')) {
+        return;
+      }
+      $(this).addClass('initialized');
+      var overlayActive = false;
+      var doneAnimating = true;
+      var inDuration = 275;
+      var outDuration = 200;
+      var origin = $(this);
+      var placeholder = $('<div></div>').addClass('material-placeholder');
+      var originalWidth = 0;
+      var originalHeight = 0;
+      origin.wrap(placeholder);
+      origin.on('click', function() {
+        var placeholder = origin.parent('.material-placeholder');
+        var windowWidth = window.innerWidth;
+        var windowHeight = window.innerHeight;
+        var originalWidth = origin.width();
+        var originalHeight = origin.height();
+        if (doneAnimating === false) {
+          returnToOriginal();
+          return false;
+        } else if (overlayActive && doneAnimating === true) {
+          returnToOriginal();
+          return false;
+        }
+        doneAnimating = false;
+        origin.addClass('active');
+        overlayActive = true;
+        placeholder.css({
+          width: placeholder[0].getBoundingClientRect().width,
+          height: placeholder[0].getBoundingClientRect().height,
+          position: 'relative',
+          top: 0,
+          left: 0
+        });
+        origin.css({
+          position: 'absolute',
+          'z-index': 1000
+        }).data('width', originalWidth).data('height', originalHeight);
+        var overlay = $('<div id="materialbox-overlay"></div>').css({opacity: 0}).click(function() {
+          if (doneAnimating === true)
+            returnToOriginal();
+        });
+        $('body').append(overlay);
+        overlay.velocity({opacity: 1}, {
+          duration: inDuration,
+          queue: false,
+          easing: 'easeOutQuad'
+        });
+        if (origin.data('caption') !== "") {
+          var $photo_caption = $('<div class="materialbox-caption"></div>');
+          $photo_caption.text(origin.data('caption'));
+          $('body').append($photo_caption);
+          $photo_caption.css({"display": "inline"});
+          $photo_caption.velocity({opacity: 1}, {
+            duration: inDuration,
+            queue: false,
+            easing: 'easeOutQuad'
+          });
+        }
+        var ratio = 0;
+        var widthPercent = originalWidth / windowWidth;
+        var heightPercent = originalHeight / windowHeight;
+        var newWidth = 0;
+        var newHeight = 0;
+        if (widthPercent > heightPercent) {
+          ratio = originalHeight / originalWidth;
+          newWidth = windowWidth * 0.9;
+          newHeight = windowWidth * 0.9 * ratio;
+        } else {
+          ratio = originalWidth / originalHeight;
+          newWidth = (windowHeight * 0.9) * ratio;
+          newHeight = windowHeight * 0.9;
+        }
+        if (origin.hasClass('responsive-img')) {
+          origin.velocity({
+            'max-width': newWidth,
+            'width': originalWidth
+          }, {
+            duration: 0,
+            queue: false,
+            complete: function() {
+              origin.css({
+                left: 0,
+                top: 0
+              }).velocity({
                 height: newHeight,
                 width: newWidth,
                 left: $(document).scrollLeft() + windowWidth / 2 - origin.parent('.material-placeholder').offset().left - newWidth / 2,
@@ -4546,966 +4748,823 @@ System.registerDynamic("src/material_components/materialbox.js", ["github:instag
               });
             }
           });
-          $(window).scroll(function() {
-            if (overlayActive) {
-              returnToOriginal();
+        } else {
+          origin.css('left', 0).css('top', 0).velocity({
+            height: newHeight,
+            width: newWidth,
+            left: $(document).scrollLeft() + windowWidth / 2 - origin.parent('.material-placeholder').offset().left - newWidth / 2,
+            top: $(document).scrollTop() + windowHeight / 2 - origin.parent('.material-placeholder').offset().top - newHeight / 2
+          }, {
+            duration: inDuration,
+            queue: false,
+            easing: 'easeOutQuad',
+            complete: function() {
+              doneAnimating = true;
             }
           });
-          $(document).keyup(function(e) {
-            if (e.keyCode === 27 && doneAnimating === true) {
-              if (overlayActive) {
-                returnToOriginal();
-              }
-            }
-          });
-          function returnToOriginal() {
-            doneAnimating = false;
-            var placeholder = origin.parent('.material-placeholder');
-            var windowWidth = window.innerWidth;
-            var windowHeight = window.innerHeight;
-            var originalWidth = origin.data('width');
-            var originalHeight = origin.data('height');
-            origin.velocity("stop", true);
-            $('#materialbox-overlay').velocity("stop", true);
-            $('.materialbox-caption').velocity("stop", true);
-            $('#materialbox-overlay').velocity({opacity: 0}, {
-              duration: outDuration,
-              queue: false,
-              easing: 'easeOutQuad',
-              complete: function() {
-                overlayActive = false;
-                $(this).remove();
-              }
-            });
-            origin.velocity({
-              width: originalWidth,
-              height: originalHeight,
-              left: 0,
-              top: 0
-            }, {
-              duration: outDuration,
-              queue: false,
-              easing: 'easeOutQuad'
-            });
-            $('.materialbox-caption').velocity({opacity: 0}, {
-              duration: outDuration,
-              queue: false,
-              easing: 'easeOutQuad',
-              complete: function() {
-                placeholder.css({
-                  height: '',
-                  width: '',
-                  position: '',
-                  top: '',
-                  left: ''
-                });
-                origin.css({
-                  height: '',
-                  top: '',
-                  left: '',
-                  width: '',
-                  'max-width': '',
-                  position: '',
-                  'z-index': ''
-                });
-                origin.removeClass('active');
-                doneAnimating = true;
-                $(this).remove();
-              }
-            });
-          }
-        });
-      };
-      $(document).ready(function() {
-        $('.materialboxed').materialbox();
-      });
-    }(jQuery));
-  })();
-  return _retrieveGlobal();
-});
-
-System.registerDynamic("src/material_components/parallax.js", ["github:instagis/jquery_helper@0.2.1"], false, function(__require, __exports, __module) {
-  var _retrieveGlobal = System.get("@@global-helpers").prepareGlobal(__module.id, null, null);
-  (function() {
-    (function($) {
-      $.fn.parallax = function() {
-        var window_width = $(window).width();
-        return this.each(function(i) {
-          var $this = $(this);
-          $this.addClass('parallax');
-          function updateParallax(initial) {
-            var container_height;
-            if (window_width < 601) {
-              container_height = ($this.height() > 0) ? $this.height() : $this.children("img").height();
-            } else {
-              container_height = ($this.height() > 0) ? $this.height() : 500;
-            }
-            var $img = $this.children("img").first();
-            var img_height = $img.height();
-            var parallax_dist = img_height - container_height;
-            var bottom = $this.offset().top + container_height;
-            var top = $this.offset().top;
-            var scrollTop = $(window).scrollTop();
-            var windowHeight = window.innerHeight;
-            var windowBottom = scrollTop + windowHeight;
-            var percentScrolled = (windowBottom - top) / (container_height + windowHeight);
-            var parallax = Math.round((parallax_dist * percentScrolled));
-            if (initial) {
-              $img.css('display', 'block');
-            }
-            if ((bottom > scrollTop) && (top < (scrollTop + windowHeight))) {
-              $img.css('transform', "translate3D(-50%," + parallax + "px, 0)");
-            }
-          }
-          $this.children("img").one("load", function() {
-            updateParallax(true);
-          }).each(function() {
-            if (this.complete)
-              $(this).load();
-          });
-          $(window).scroll(function() {
-            window_width = $(window).width();
-            updateParallax(false);
-          });
-          $(window).resize(function() {
-            window_width = $(window).width();
-            updateParallax(false);
-          });
-        });
-      };
-    }(jQuery));
-  })();
-  return _retrieveGlobal();
-});
-
-System.registerDynamic("src/material_components/pushpin.js", ["github:instagis/jquery_helper@0.2.1"], false, function(__require, __exports, __module) {
-  var _retrieveGlobal = System.get("@@global-helpers").prepareGlobal(__module.id, null, null);
-  (function() {
-    (function($) {
-      $(document).ready(function() {
-        $.fn.pushpin = function(options) {
-          var defaults = {
-            top: 0,
-            bottom: Infinity,
-            offset: 0
-          };
-          options = $.extend(defaults, options);
-          $index = 0;
-          return this.each(function() {
-            var $uniqueId = Materialize.guid(),
-                $this = $(this),
-                $original_offset = $(this).offset().top;
-            function removePinClasses(object) {
-              object.removeClass('pin-top');
-              object.removeClass('pinned');
-              object.removeClass('pin-bottom');
-            }
-            function updateElements(objects, scrolled) {
-              objects.each(function() {
-                if (options.top <= scrolled && options.bottom >= scrolled && !$(this).hasClass('pinned')) {
-                  removePinClasses($(this));
-                  $(this).css('top', options.offset);
-                  $(this).addClass('pinned');
-                }
-                if (scrolled < options.top && !$(this).hasClass('pin-top')) {
-                  removePinClasses($(this));
-                  $(this).css('top', 0);
-                  $(this).addClass('pin-top');
-                }
-                if (scrolled > options.bottom && !$(this).hasClass('pin-bottom')) {
-                  removePinClasses($(this));
-                  $(this).addClass('pin-bottom');
-                  $(this).css('top', options.bottom - $original_offset);
-                }
-              });
-            }
-            updateElements($this, $(window).scrollTop());
-            $(window).on('scroll.' + $uniqueId, function() {
-              var $scrolled = $(window).scrollTop() + options.offset;
-              updateElements($this, $scrolled);
-            });
-          });
-        };
-      });
-    }(jQuery));
-  })();
-  return _retrieveGlobal();
-});
-
-System.registerDynamic("src/material_components/scrollspy.js", ["github:instagis/jquery_helper@0.2.1"], false, function(__require, __exports, __module) {
-  var _retrieveGlobal = System.get("@@global-helpers").prepareGlobal(__module.id, null, null);
-  (function() {
-    (function($) {
-      var jWindow = $(window);
-      var elements = [];
-      var elementsInView = [];
-      var isSpying = false;
-      var ticks = 0;
-      var unique_id = 1;
-      var offset = {
-        top: 0,
-        right: 0,
-        bottom: 0,
-        left: 0
-      };
-      function findElements(top, right, bottom, left) {
-        var hits = $();
-        $.each(elements, function(i, element) {
-          if (element.height() > 0) {
-            var elTop = element.offset().top,
-                elLeft = element.offset().left,
-                elRight = elLeft + element.width(),
-                elBottom = elTop + element.height();
-            var isIntersect = !(elLeft > right || elRight < left || elTop > bottom || elBottom < top);
-            if (isIntersect) {
-              hits.push(element);
-            }
-          }
-        });
-        return hits;
-      }
-      function onScroll() {
-        ++ticks;
-        var top = jWindow.scrollTop(),
-            left = jWindow.scrollLeft(),
-            right = left + jWindow.width(),
-            bottom = top + jWindow.height();
-        var intersections = findElements(top + offset.top + 200, right + offset.right, bottom + offset.bottom, left + offset.left);
-        $.each(intersections, function(i, element) {
-          var lastTick = element.data('scrollSpy:ticks');
-          if (typeof lastTick != 'number') {
-            element.triggerHandler('scrollSpy:enter');
-          }
-          element.data('scrollSpy:ticks', ticks);
-        });
-        $.each(elementsInView, function(i, element) {
-          var lastTick = element.data('scrollSpy:ticks');
-          if (typeof lastTick == 'number' && lastTick !== ticks) {
-            element.triggerHandler('scrollSpy:exit');
-            element.data('scrollSpy:ticks', null);
-          }
-        });
-        elementsInView = intersections;
-      }
-      function onWinSize() {
-        jWindow.trigger('scrollSpy:winSize');
-      }
-      var getTime = (Date.now || function() {
-        return new Date().getTime();
-      });
-      function throttle(func, wait, options) {
-        var context,
-            args,
-            result;
-        var timeout = null;
-        var previous = 0;
-        options || (options = {});
-        var later = function() {
-          previous = options.leading === false ? 0 : getTime();
-          timeout = null;
-          result = func.apply(context, args);
-          context = args = null;
-        };
-        return function() {
-          var now = getTime();
-          if (!previous && options.leading === false)
-            previous = now;
-          var remaining = wait - (now - previous);
-          context = this;
-          args = arguments;
-          if (remaining <= 0) {
-            clearTimeout(timeout);
-            timeout = null;
-            previous = now;
-            result = func.apply(context, args);
-            context = args = null;
-          } else if (!timeout && options.trailing !== false) {
-            timeout = setTimeout(later, remaining);
-          }
-          return result;
-        };
-      }
-      ;
-      $.scrollSpy = function(selector, options) {
-        var visible = [];
-        selector = $(selector);
-        selector.each(function(i, element) {
-          elements.push($(element));
-          $(element).data("scrollSpy:id", i);
-          $('a[href=#' + $(element).attr('id') + ']').click(function(e) {
-            e.preventDefault();
-            var offset = $(this.hash).offset().top + 1;
-            $('html, body').animate({scrollTop: offset - 200}, {
-              duration: 400,
-              queue: false,
-              easing: 'easeOutCubic'
-            });
-          });
-        });
-        options = options || {throttle: 100};
-        offset.top = options.offsetTop || 0;
-        offset.right = options.offsetRight || 0;
-        offset.bottom = options.offsetBottom || 0;
-        offset.left = options.offsetLeft || 0;
-        var throttledScroll = throttle(onScroll, options.throttle || 100);
-        var readyScroll = function() {
-          $(document).ready(throttledScroll);
-        };
-        if (!isSpying) {
-          jWindow.on('scroll', readyScroll);
-          jWindow.on('resize', readyScroll);
-          isSpying = true;
         }
-        setTimeout(readyScroll, 0);
-        selector.on('scrollSpy:enter', function() {
-          visible = $.grep(visible, function(value) {
-            return value.height() != 0;
-          });
-          var $this = $(this);
-          if (visible[0]) {
-            $('a[href=#' + visible[0].attr('id') + ']').removeClass('active');
-            if ($this.data('scrollSpy:id') < visible[0].data('scrollSpy:id')) {
-              visible.unshift($(this));
-            } else {
-              visible.push($(this));
-            }
-          } else {
-            visible.push($(this));
+      });
+      $(window).scroll(function() {
+        if (overlayActive) {
+          returnToOriginal();
+        }
+      });
+      $(document).keyup(function(e) {
+        if (e.keyCode === 27 && doneAnimating === true) {
+          if (overlayActive) {
+            returnToOriginal();
           }
-          $('a[href=#' + visible[0].attr('id') + ']').addClass('active');
+        }
+      });
+      function returnToOriginal() {
+        doneAnimating = false;
+        var placeholder = origin.parent('.material-placeholder');
+        var windowWidth = window.innerWidth;
+        var windowHeight = window.innerHeight;
+        var originalWidth = origin.data('width');
+        var originalHeight = origin.data('height');
+        origin.velocity("stop", true);
+        $('#materialbox-overlay').velocity("stop", true);
+        $('.materialbox-caption').velocity("stop", true);
+        $('#materialbox-overlay').velocity({opacity: 0}, {
+          duration: outDuration,
+          queue: false,
+          easing: 'easeOutQuad',
+          complete: function() {
+            overlayActive = false;
+            $(this).remove();
+          }
         });
-        selector.on('scrollSpy:exit', function() {
-          visible = $.grep(visible, function(value) {
-            return value.height() != 0;
-          });
-          if (visible[0]) {
-            $('a[href=#' + visible[0].attr('id') + ']').removeClass('active');
-            var $this = $(this);
-            visible = $.grep(visible, function(value) {
-              return value.attr('id') != $this.attr('id');
+        origin.velocity({
+          width: originalWidth,
+          height: originalHeight,
+          left: 0,
+          top: 0
+        }, {
+          duration: outDuration,
+          queue: false,
+          easing: 'easeOutQuad'
+        });
+        $('.materialbox-caption').velocity({opacity: 0}, {
+          duration: outDuration,
+          queue: false,
+          easing: 'easeOutQuad',
+          complete: function() {
+            placeholder.css({
+              height: '',
+              width: '',
+              position: '',
+              top: '',
+              left: ''
             });
-            if (visible[0]) {
-              $('a[href=#' + visible[0].attr('id') + ']').addClass('active');
-            }
+            origin.css({
+              height: '',
+              top: '',
+              left: '',
+              width: '',
+              'max-width': '',
+              position: '',
+              'z-index': ''
+            });
+            origin.removeClass('active');
+            doneAnimating = true;
+            $(this).remove();
           }
         });
-        return selector;
-      };
-      $.winSizeSpy = function(options) {
-        $.winSizeSpy = function() {
-          return jWindow;
-        };
-        options = options || {throttle: 100};
-        return jWindow.on('resize', throttle(onWinSize, options.throttle || 100));
-      };
-      $.fn.scrollSpy = function(options) {
-        return $.scrollSpy($(this), options);
-      };
-    })(jQuery);
-  })();
-  return _retrieveGlobal();
+      }
+    });
+  };
+  $(document).ready(function() {
+    $('.materialboxed').materialbox();
+  });
 });
 
-System.registerDynamic("src/material_components/sideNav.js", ["github:instagis/jquery_helper@0.2.1"], false, function(__require, __exports, __module) {
-  var _retrieveGlobal = System.get("@@global-helpers").prepareGlobal(__module.id, null, null);
-  (function() {
-    (function($) {
-      var methods = {
-        init: function(options) {
-          var defaults = {
-            menuWidth: 240,
-            edge: 'left',
-            closeOnClick: false
-          };
-          options = $.extend(defaults, options);
-          $(this).each(function() {
-            var $this = $(this);
-            var menu_id = $("#" + $this.attr('data-activates'));
-            if (options.menuWidth != 240) {
-              menu_id.css('width', options.menuWidth);
+_removeDefine();
+})();
+(function() {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/parallax.js", ["github:instagis/jquery_helper@0.2.1"], function($) {
+  $.fn.parallax = function() {
+    var window_width = $(window).width();
+    return this.each(function(i) {
+      var $this = $(this);
+      $this.addClass('parallax');
+      function updateParallax(initial) {
+        var container_height;
+        if (window_width < 601) {
+          container_height = ($this.height() > 0) ? $this.height() : $this.children("img").height();
+        } else {
+          container_height = ($this.height() > 0) ? $this.height() : 500;
+        }
+        var $img = $this.children("img").first();
+        var img_height = $img.height();
+        var parallax_dist = img_height - container_height;
+        var bottom = $this.offset().top + container_height;
+        var top = $this.offset().top;
+        var scrollTop = $(window).scrollTop();
+        var windowHeight = window.innerHeight;
+        var windowBottom = scrollTop + windowHeight;
+        var percentScrolled = (windowBottom - top) / (container_height + windowHeight);
+        var parallax = Math.round((parallax_dist * percentScrolled));
+        if (initial) {
+          $img.css('display', 'block');
+        }
+        if ((bottom > scrollTop) && (top < (scrollTop + windowHeight))) {
+          $img.css('transform', "translate3D(-50%," + parallax + "px, 0)");
+        }
+      }
+      $this.children("img").one("load", function() {
+        updateParallax(true);
+      }).each(function() {
+        if (this.complete)
+          $(this).load();
+      });
+      $(window).scroll(function() {
+        window_width = $(window).width();
+        updateParallax(false);
+      });
+      $(window).resize(function() {
+        window_width = $(window).width();
+        updateParallax(false);
+      });
+    });
+  };
+});
+
+_removeDefine();
+})();
+(function() {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/pushpin.js", ["github:instagis/jquery_helper@0.2.1"], function($) {
+  $(document).ready(function() {
+    $.fn.pushpin = function(options) {
+      var defaults = {
+        top: 0,
+        bottom: Infinity,
+        offset: 0
+      };
+      options = $.extend(defaults, options);
+      $index = 0;
+      return this.each(function() {
+        var $uniqueId = Materialize.guid(),
+            $this = $(this),
+            $original_offset = $(this).offset().top;
+        function removePinClasses(object) {
+          object.removeClass('pin-top');
+          object.removeClass('pinned');
+          object.removeClass('pin-bottom');
+        }
+        function updateElements(objects, scrolled) {
+          objects.each(function() {
+            if (options.top <= scrolled && options.bottom >= scrolled && !$(this).hasClass('pinned')) {
+              removePinClasses($(this));
+              $(this).css('top', options.offset);
+              $(this).addClass('pinned');
             }
-            var dragTarget = $('<div class="drag-target"></div>');
-            $('body').append(dragTarget);
-            if (options.edge == 'left') {
-              menu_id.css('left', -1 * (options.menuWidth + 10));
-              dragTarget.css({'left': 0});
-            } else {
-              menu_id.addClass('right-aligned').css('right', -1 * (options.menuWidth + 10)).css('left', '');
-              dragTarget.css({'right': 0});
+            if (scrolled < options.top && !$(this).hasClass('pin-top')) {
+              removePinClasses($(this));
+              $(this).css('top', 0);
+              $(this).addClass('pin-top');
             }
-            if (menu_id.hasClass('fixed')) {
-              if (window.innerWidth > 992) {
-                menu_id.css('left', 0);
+            if (scrolled > options.bottom && !$(this).hasClass('pin-bottom')) {
+              removePinClasses($(this));
+              $(this).addClass('pin-bottom');
+              $(this).css('top', options.bottom - $original_offset);
+            }
+          });
+        }
+        updateElements($this, $(window).scrollTop());
+        $(window).on('scroll.' + $uniqueId, function() {
+          var $scrolled = $(window).scrollTop() + options.offset;
+          updateElements($this, $scrolled);
+        });
+      });
+    };
+  });
+});
+
+_removeDefine();
+})();
+(function() {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/scrollspy.js", ["github:instagis/jquery_helper@0.2.1"], function($) {
+  var jWindow = $(window);
+  var elements = [];
+  var elementsInView = [];
+  var isSpying = false;
+  var ticks = 0;
+  var unique_id = 1;
+  var offset = {
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0
+  };
+  function findElements(top, right, bottom, left) {
+    var hits = $();
+    $.each(elements, function(i, element) {
+      if (element.height() > 0) {
+        var elTop = element.offset().top,
+            elLeft = element.offset().left,
+            elRight = elLeft + element.width(),
+            elBottom = elTop + element.height();
+        var isIntersect = !(elLeft > right || elRight < left || elTop > bottom || elBottom < top);
+        if (isIntersect) {
+          hits.push(element);
+        }
+      }
+    });
+    return hits;
+  }
+  function onScroll() {
+    ++ticks;
+    var top = jWindow.scrollTop(),
+        left = jWindow.scrollLeft(),
+        right = left + jWindow.width(),
+        bottom = top + jWindow.height();
+    var intersections = findElements(top + offset.top + 200, right + offset.right, bottom + offset.bottom, left + offset.left);
+    $.each(intersections, function(i, element) {
+      var lastTick = element.data('scrollSpy:ticks');
+      if (typeof lastTick != 'number') {
+        element.triggerHandler('scrollSpy:enter');
+      }
+      element.data('scrollSpy:ticks', ticks);
+    });
+    $.each(elementsInView, function(i, element) {
+      var lastTick = element.data('scrollSpy:ticks');
+      if (typeof lastTick == 'number' && lastTick !== ticks) {
+        element.triggerHandler('scrollSpy:exit');
+        element.data('scrollSpy:ticks', null);
+      }
+    });
+    elementsInView = intersections;
+  }
+  function onWinSize() {
+    jWindow.trigger('scrollSpy:winSize');
+  }
+  var getTime = (Date.now || function() {
+    return new Date().getTime();
+  });
+  function throttle(func, wait, options) {
+    var context,
+        args,
+        result;
+    var timeout = null;
+    var previous = 0;
+    options || (options = {});
+    var later = function() {
+      previous = options.leading === false ? 0 : getTime();
+      timeout = null;
+      result = func.apply(context, args);
+      context = args = null;
+    };
+    return function() {
+      var now = getTime();
+      if (!previous && options.leading === false)
+        previous = now;
+      var remaining = wait - (now - previous);
+      context = this;
+      args = arguments;
+      if (remaining <= 0) {
+        clearTimeout(timeout);
+        timeout = null;
+        previous = now;
+        result = func.apply(context, args);
+        context = args = null;
+      } else if (!timeout && options.trailing !== false) {
+        timeout = setTimeout(later, remaining);
+      }
+      return result;
+    };
+  }
+  ;
+  $.scrollSpy = function(selector, options) {
+    var visible = [];
+    selector = $(selector);
+    selector.each(function(i, element) {
+      elements.push($(element));
+      $(element).data("scrollSpy:id", i);
+      $('a[href=#' + $(element).attr('id') + ']').click(function(e) {
+        e.preventDefault();
+        var offset = $(this.hash).offset().top + 1;
+        $('html, body').animate({scrollTop: offset - 200}, {
+          duration: 400,
+          queue: false,
+          easing: 'easeOutCubic'
+        });
+      });
+    });
+    options = options || {throttle: 100};
+    offset.top = options.offsetTop || 0;
+    offset.right = options.offsetRight || 0;
+    offset.bottom = options.offsetBottom || 0;
+    offset.left = options.offsetLeft || 0;
+    var throttledScroll = throttle(onScroll, options.throttle || 100);
+    var readyScroll = function() {
+      $(document).ready(throttledScroll);
+    };
+    if (!isSpying) {
+      jWindow.on('scroll', readyScroll);
+      jWindow.on('resize', readyScroll);
+      isSpying = true;
+    }
+    setTimeout(readyScroll, 0);
+    selector.on('scrollSpy:enter', function() {
+      visible = $.grep(visible, function(value) {
+        return value.height() != 0;
+      });
+      var $this = $(this);
+      if (visible[0]) {
+        $('a[href=#' + visible[0].attr('id') + ']').removeClass('active');
+        if ($this.data('scrollSpy:id') < visible[0].data('scrollSpy:id')) {
+          visible.unshift($(this));
+        } else {
+          visible.push($(this));
+        }
+      } else {
+        visible.push($(this));
+      }
+      $('a[href=#' + visible[0].attr('id') + ']').addClass('active');
+    });
+    selector.on('scrollSpy:exit', function() {
+      visible = $.grep(visible, function(value) {
+        return value.height() != 0;
+      });
+      if (visible[0]) {
+        $('a[href=#' + visible[0].attr('id') + ']').removeClass('active');
+        var $this = $(this);
+        visible = $.grep(visible, function(value) {
+          return value.attr('id') != $this.attr('id');
+        });
+        if (visible[0]) {
+          $('a[href=#' + visible[0].attr('id') + ']').addClass('active');
+        }
+      }
+    });
+    return selector;
+  };
+  $.winSizeSpy = function(options) {
+    $.winSizeSpy = function() {
+      return jWindow;
+    };
+    options = options || {throttle: 100};
+    return jWindow.on('resize', throttle(onWinSize, options.throttle || 100));
+  };
+  $.fn.scrollSpy = function(options) {
+    return $.scrollSpy($(this), options);
+  };
+});
+
+_removeDefine();
+})();
+(function() {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/sideNav.js", ["github:instagis/jquery_helper@0.2.1"], function($) {
+  var methods = {
+    init: function(options) {
+      var defaults = {
+        menuWidth: 240,
+        edge: 'left',
+        closeOnClick: false
+      };
+      options = $.extend(defaults, options);
+      $(this).each(function() {
+        var $this = $(this);
+        var menu_id = $("#" + $this.attr('data-activates'));
+        if (options.menuWidth != 240) {
+          menu_id.css('width', options.menuWidth);
+        }
+        var dragTarget = $('<div class="drag-target"></div>');
+        $('body').append(dragTarget);
+        if (options.edge == 'left') {
+          menu_id.css('left', -1 * (options.menuWidth + 10));
+          dragTarget.css({'left': 0});
+        } else {
+          menu_id.addClass('right-aligned').css('right', -1 * (options.menuWidth + 10)).css('left', '');
+          dragTarget.css({'right': 0});
+        }
+        if (menu_id.hasClass('fixed')) {
+          if (window.innerWidth > 992) {
+            menu_id.css('left', 0);
+          }
+        }
+        if (menu_id.hasClass('fixed')) {
+          $(window).resize(function() {
+            if (window.innerWidth > 992) {
+              if ($('#sidenav-overlay').css('opacity') !== 0 && menuOut) {
+                removeMenu(true);
+              } else {
+                menu_id.removeAttr('style');
+                menu_id.css('width', options.menuWidth);
               }
+            } else if (menuOut === false) {
+              if (options.edge === 'left')
+                menu_id.css('left', -1 * (options.menuWidth + 10));
+              else
+                menu_id.css('right', -1 * (options.menuWidth + 10));
             }
-            if (menu_id.hasClass('fixed')) {
-              $(window).resize(function() {
-                if (window.innerWidth > 992) {
-                  if ($('#sidenav-overlay').css('opacity') !== 0 && menuOut) {
-                    removeMenu(true);
-                  } else {
-                    menu_id.removeAttr('style');
-                    menu_id.css('width', options.menuWidth);
-                  }
-                } else if (menuOut === false) {
-                  if (options.edge === 'left')
-                    menu_id.css('left', -1 * (options.menuWidth + 10));
-                  else
-                    menu_id.css('right', -1 * (options.menuWidth + 10));
+          });
+        }
+        if (options.closeOnClick === true) {
+          menu_id.on("click.itemclick", "a:not(.collapsible-header)", function() {
+            removeMenu();
+          });
+        }
+        function removeMenu(restoreNav) {
+          panning = false;
+          menuOut = false;
+          $('body').css('overflow', '');
+          $('#sidenav-overlay').velocity({opacity: 0}, {
+            duration: 200,
+            queue: false,
+            easing: 'easeOutQuad',
+            complete: function() {
+              $(this).remove();
+            }
+          });
+          if (options.edge === 'left') {
+            dragTarget.css({
+              width: '',
+              right: '',
+              left: '0'
+            });
+            menu_id.velocity({left: -1 * (options.menuWidth + 10)}, {
+              duration: 200,
+              queue: false,
+              easing: 'easeOutCubic',
+              complete: function() {
+                if (restoreNav === true) {
+                  menu_id.removeAttr('style');
+                  menu_id.css('width', options.menuWidth);
                 }
-              });
-            }
-            if (options.closeOnClick === true) {
-              menu_id.on("click.itemclick", "a:not(.collapsible-header)", function() {
+              }
+            });
+          } else {
+            dragTarget.css({
+              width: '',
+              right: '0',
+              left: ''
+            });
+            menu_id.velocity({right: -1 * (options.menuWidth + 10)}, {
+              duration: 200,
+              queue: false,
+              easing: 'easeOutCubic',
+              complete: function() {
+                if (restoreNav === true) {
+                  menu_id.removeAttr('style');
+                  menu_id.css('width', options.menuWidth);
+                }
+              }
+            });
+          }
+        }
+        var panning = false;
+        var menuOut = false;
+        dragTarget.on('click', function() {
+          removeMenu();
+        });
+        dragTarget.hammer({prevent_default: false}).bind('pan', function(e) {
+          if (e.gesture.pointerType == "touch") {
+            var direction = e.gesture.direction;
+            var x = e.gesture.center.x;
+            var y = e.gesture.center.y;
+            var velocityX = e.gesture.velocityX;
+            $('body').css('overflow', 'hidden');
+            if ($('#sidenav-overlay').length === 0) {
+              var overlay = $('<div id="sidenav-overlay"></div>');
+              overlay.css('opacity', 0).click(function() {
                 removeMenu();
               });
+              $('body').append(overlay);
             }
-            function removeMenu(restoreNav) {
-              panning = false;
+            if (options.edge === 'left') {
+              if (x > options.menuWidth) {
+                x = options.menuWidth;
+              } else if (x < 0) {
+                x = 0;
+              }
+            }
+            if (options.edge === 'left') {
+              if (x < (options.menuWidth / 2)) {
+                menuOut = false;
+              } else if (x >= (options.menuWidth / 2)) {
+                menuOut = true;
+              }
+              menu_id.css('left', (x - options.menuWidth));
+            } else {
+              if (x < (window.innerWidth - options.menuWidth / 2)) {
+                menuOut = true;
+              } else if (x >= (window.innerWidth - options.menuWidth / 2)) {
+                menuOut = false;
+              }
+              var rightPos = -1 * (x - options.menuWidth / 2);
+              if (rightPos > 0) {
+                rightPos = 0;
+              }
+              menu_id.css('right', rightPos);
+            }
+            var overlayPerc;
+            if (options.edge === 'left') {
+              overlayPerc = x / options.menuWidth;
+              $('#sidenav-overlay').velocity({opacity: overlayPerc}, {
+                duration: 50,
+                queue: false,
+                easing: 'easeOutQuad'
+              });
+            } else {
+              overlayPerc = Math.abs((x - window.innerWidth) / options.menuWidth);
+              $('#sidenav-overlay').velocity({opacity: overlayPerc}, {
+                duration: 50,
+                queue: false,
+                easing: 'easeOutQuad'
+              });
+            }
+          }
+        }).bind('panend', function(e) {
+          if (e.gesture.pointerType == "touch") {
+            var velocityX = e.gesture.velocityX;
+            panning = false;
+            if (options.edge === 'left') {
+              if ((menuOut && velocityX <= 0.3) || velocityX < -0.5) {
+                menu_id.velocity({left: 0}, {
+                  duration: 300,
+                  queue: false,
+                  easing: 'easeOutQuad'
+                });
+                $('#sidenav-overlay').velocity({opacity: 1}, {
+                  duration: 50,
+                  queue: false,
+                  easing: 'easeOutQuad'
+                });
+                dragTarget.css({
+                  width: '50%',
+                  right: 0,
+                  left: ''
+                });
+              } else if (!menuOut || velocityX > 0.3) {
+                $('body').css('overflow', '');
+                menu_id.velocity({left: -1 * (options.menuWidth + 10)}, {
+                  duration: 200,
+                  queue: false,
+                  easing: 'easeOutQuad'
+                });
+                $('#sidenav-overlay').velocity({opacity: 0}, {
+                  duration: 200,
+                  queue: false,
+                  easing: 'easeOutQuad',
+                  complete: function() {
+                    $(this).remove();
+                  }
+                });
+                dragTarget.css({
+                  width: '10px',
+                  right: '',
+                  left: 0
+                });
+              }
+            } else {
+              if ((menuOut && velocityX >= -0.3) || velocityX > 0.5) {
+                menu_id.velocity({right: 0}, {
+                  duration: 300,
+                  queue: false,
+                  easing: 'easeOutQuad'
+                });
+                $('#sidenav-overlay').velocity({opacity: 1}, {
+                  duration: 50,
+                  queue: false,
+                  easing: 'easeOutQuad'
+                });
+                dragTarget.css({
+                  width: '50%',
+                  right: '',
+                  left: 0
+                });
+              } else if (!menuOut || velocityX < -0.3) {
+                $('body').css('overflow', '');
+                menu_id.velocity({right: -1 * (options.menuWidth + 10)}, {
+                  duration: 200,
+                  queue: false,
+                  easing: 'easeOutQuad'
+                });
+                $('#sidenav-overlay').velocity({opacity: 0}, {
+                  duration: 200,
+                  queue: false,
+                  easing: 'easeOutQuad',
+                  complete: function() {
+                    $(this).remove();
+                  }
+                });
+                dragTarget.css({
+                  width: '10px',
+                  right: 0,
+                  left: ''
+                });
+              }
+            }
+          }
+        });
+        $this.click(function() {
+          if (menuOut === true) {
+            menuOut = false;
+            panning = false;
+            removeMenu();
+          } else {
+            $('body').css('overflow', 'hidden');
+            $('body').append(dragTarget);
+            if (options.edge === 'left') {
+              dragTarget.css({
+                width: '50%',
+                right: 0,
+                left: ''
+              });
+              menu_id.velocity({left: 0}, {
+                duration: 300,
+                queue: false,
+                easing: 'easeOutQuad'
+              });
+            } else {
+              dragTarget.css({
+                width: '50%',
+                right: '',
+                left: 0
+              });
+              menu_id.velocity({right: 0}, {
+                duration: 300,
+                queue: false,
+                easing: 'easeOutQuad'
+              });
+              menu_id.css('left', '');
+            }
+            var overlay = $('<div id="sidenav-overlay"></div>');
+            overlay.css('opacity', 0).click(function() {
               menuOut = false;
-              $('body').css('overflow', '');
-              $('#sidenav-overlay').velocity({opacity: 0}, {
-                duration: 200,
+              panning = false;
+              removeMenu();
+              overlay.velocity({opacity: 0}, {
+                duration: 300,
                 queue: false,
                 easing: 'easeOutQuad',
                 complete: function() {
                   $(this).remove();
                 }
               });
-              if (options.edge === 'left') {
-                dragTarget.css({
-                  width: '',
-                  right: '',
-                  left: '0'
-                });
-                menu_id.velocity({left: -1 * (options.menuWidth + 10)}, {
-                  duration: 200,
-                  queue: false,
-                  easing: 'easeOutCubic',
-                  complete: function() {
-                    if (restoreNav === true) {
-                      menu_id.removeAttr('style');
-                      menu_id.css('width', options.menuWidth);
-                    }
-                  }
-                });
-              } else {
-                dragTarget.css({
-                  width: '',
-                  right: '0',
-                  left: ''
-                });
-                menu_id.velocity({right: -1 * (options.menuWidth + 10)}, {
-                  duration: 200,
-                  queue: false,
-                  easing: 'easeOutCubic',
-                  complete: function() {
-                    if (restoreNav === true) {
-                      menu_id.removeAttr('style');
-                      menu_id.css('width', options.menuWidth);
-                    }
-                  }
-                });
-              }
-            }
-            var panning = false;
-            var menuOut = false;
-            dragTarget.on('click', function() {
-              removeMenu();
             });
-            dragTarget.hammer({prevent_default: false}).bind('pan', function(e) {
-              if (e.gesture.pointerType == "touch") {
-                var direction = e.gesture.direction;
-                var x = e.gesture.center.x;
-                var y = e.gesture.center.y;
-                var velocityX = e.gesture.velocityX;
-                $('body').css('overflow', 'hidden');
-                if ($('#sidenav-overlay').length === 0) {
-                  var overlay = $('<div id="sidenav-overlay"></div>');
-                  overlay.css('opacity', 0).click(function() {
-                    removeMenu();
-                  });
-                  $('body').append(overlay);
-                }
-                if (options.edge === 'left') {
-                  if (x > options.menuWidth) {
-                    x = options.menuWidth;
-                  } else if (x < 0) {
-                    x = 0;
-                  }
-                }
-                if (options.edge === 'left') {
-                  if (x < (options.menuWidth / 2)) {
-                    menuOut = false;
-                  } else if (x >= (options.menuWidth / 2)) {
-                    menuOut = true;
-                  }
-                  menu_id.css('left', (x - options.menuWidth));
-                } else {
-                  if (x < (window.innerWidth - options.menuWidth / 2)) {
-                    menuOut = true;
-                  } else if (x >= (window.innerWidth - options.menuWidth / 2)) {
-                    menuOut = false;
-                  }
-                  var rightPos = -1 * (x - options.menuWidth / 2);
-                  if (rightPos > 0) {
-                    rightPos = 0;
-                  }
-                  menu_id.css('right', rightPos);
-                }
-                var overlayPerc;
-                if (options.edge === 'left') {
-                  overlayPerc = x / options.menuWidth;
-                  $('#sidenav-overlay').velocity({opacity: overlayPerc}, {
-                    duration: 50,
-                    queue: false,
-                    easing: 'easeOutQuad'
-                  });
-                } else {
-                  overlayPerc = Math.abs((x - window.innerWidth) / options.menuWidth);
-                  $('#sidenav-overlay').velocity({opacity: overlayPerc}, {
-                    duration: 50,
-                    queue: false,
-                    easing: 'easeOutQuad'
-                  });
-                }
-              }
-            }).bind('panend', function(e) {
-              if (e.gesture.pointerType == "touch") {
-                var velocityX = e.gesture.velocityX;
+            $('body').append(overlay);
+            overlay.velocity({opacity: 1}, {
+              duration: 300,
+              queue: false,
+              easing: 'easeOutQuad',
+              complete: function() {
+                menuOut = true;
                 panning = false;
-                if (options.edge === 'left') {
-                  if ((menuOut && velocityX <= 0.3) || velocityX < -0.5) {
-                    menu_id.velocity({left: 0}, {
-                      duration: 300,
-                      queue: false,
-                      easing: 'easeOutQuad'
-                    });
-                    $('#sidenav-overlay').velocity({opacity: 1}, {
-                      duration: 50,
-                      queue: false,
-                      easing: 'easeOutQuad'
-                    });
-                    dragTarget.css({
-                      width: '50%',
-                      right: 0,
-                      left: ''
-                    });
-                  } else if (!menuOut || velocityX > 0.3) {
-                    $('body').css('overflow', '');
-                    menu_id.velocity({left: -1 * (options.menuWidth + 10)}, {
-                      duration: 200,
-                      queue: false,
-                      easing: 'easeOutQuad'
-                    });
-                    $('#sidenav-overlay').velocity({opacity: 0}, {
-                      duration: 200,
-                      queue: false,
-                      easing: 'easeOutQuad',
-                      complete: function() {
-                        $(this).remove();
-                      }
-                    });
-                    dragTarget.css({
-                      width: '10px',
-                      right: '',
-                      left: 0
-                    });
-                  }
-                } else {
-                  if ((menuOut && velocityX >= -0.3) || velocityX > 0.5) {
-                    menu_id.velocity({right: 0}, {
-                      duration: 300,
-                      queue: false,
-                      easing: 'easeOutQuad'
-                    });
-                    $('#sidenav-overlay').velocity({opacity: 1}, {
-                      duration: 50,
-                      queue: false,
-                      easing: 'easeOutQuad'
-                    });
-                    dragTarget.css({
-                      width: '50%',
-                      right: '',
-                      left: 0
-                    });
-                  } else if (!menuOut || velocityX < -0.3) {
-                    $('body').css('overflow', '');
-                    menu_id.velocity({right: -1 * (options.menuWidth + 10)}, {
-                      duration: 200,
-                      queue: false,
-                      easing: 'easeOutQuad'
-                    });
-                    $('#sidenav-overlay').velocity({opacity: 0}, {
-                      duration: 200,
-                      queue: false,
-                      easing: 'easeOutQuad',
-                      complete: function() {
-                        $(this).remove();
-                      }
-                    });
-                    dragTarget.css({
-                      width: '10px',
-                      right: 0,
-                      left: ''
-                    });
-                  }
-                }
               }
             });
-            $this.click(function() {
-              if (menuOut === true) {
-                menuOut = false;
-                panning = false;
-                removeMenu();
-              } else {
-                $('body').css('overflow', 'hidden');
-                $('body').append(dragTarget);
-                if (options.edge === 'left') {
-                  dragTarget.css({
-                    width: '50%',
-                    right: 0,
-                    left: ''
-                  });
-                  menu_id.velocity({left: 0}, {
-                    duration: 300,
-                    queue: false,
-                    easing: 'easeOutQuad'
-                  });
-                } else {
-                  dragTarget.css({
-                    width: '50%',
-                    right: '',
-                    left: 0
-                  });
-                  menu_id.velocity({right: 0}, {
-                    duration: 300,
-                    queue: false,
-                    easing: 'easeOutQuad'
-                  });
-                  menu_id.css('left', '');
-                }
-                var overlay = $('<div id="sidenav-overlay"></div>');
-                overlay.css('opacity', 0).click(function() {
-                  menuOut = false;
-                  panning = false;
-                  removeMenu();
-                  overlay.velocity({opacity: 0}, {
-                    duration: 300,
-                    queue: false,
-                    easing: 'easeOutQuad',
-                    complete: function() {
-                      $(this).remove();
-                    }
-                  });
-                });
-                $('body').append(overlay);
-                overlay.velocity({opacity: 1}, {
-                  duration: 300,
-                  queue: false,
-                  easing: 'easeOutQuad',
-                  complete: function() {
-                    menuOut = true;
-                    panning = false;
-                  }
-                });
-              }
-              return false;
-            });
-          });
-        },
-        show: function() {
-          this.trigger('click');
-        },
-        hide: function() {
-          $('#sidenav-overlay').trigger('click');
-        }
-      };
-      $.fn.sideNav = function(methodOrOptions) {
-        if (methods[methodOrOptions]) {
-          return methods[methodOrOptions].apply(this, Array.prototype.slice.call(arguments, 1));
-        } else if (typeof methodOrOptions === 'object' || !methodOrOptions) {
-          return methods.init.apply(this, arguments);
-        } else {
-          $.error('Method ' + methodOrOptions + ' does not exist on jQuery.sideNav');
-        }
-      };
-    }(jQuery));
-  })();
-  return _retrieveGlobal();
+          }
+          return false;
+        });
+      });
+    },
+    show: function() {
+      this.trigger('click');
+    },
+    hide: function() {
+      $('#sidenav-overlay').trigger('click');
+    }
+  };
+  $.fn.sideNav = function(methodOrOptions) {
+    if (methods[methodOrOptions]) {
+      return methods[methodOrOptions].apply(this, Array.prototype.slice.call(arguments, 1));
+    } else if (typeof methodOrOptions === 'object' || !methodOrOptions) {
+      return methods.init.apply(this, arguments);
+    } else {
+      $.error('Method ' + methodOrOptions + ' does not exist on jQuery.sideNav');
+    }
+  };
 });
 
-System.registerDynamic("src/material_components/slider.js", ["github:instagis/jquery_helper@0.2.1"], false, function(__require, __exports, __module) {
-  var _retrieveGlobal = System.get("@@global-helpers").prepareGlobal(__module.id, null, null);
-  (function() {
-    (function($) {
-      var methods = {
-        init: function(options) {
-          var defaults = {
-            indicators: true,
-            height: 400,
-            transition: 500,
-            interval: 6000
-          };
-          options = $.extend(defaults, options);
-          return this.each(function() {
-            var $this = $(this);
-            var $slider = $this.find('ul.slides').first();
-            var $slides = $slider.find('li');
-            var $active_index = $slider.find('.active').index();
-            var $active;
-            if ($active_index != -1) {
-              $active = $slides.eq($active_index);
-            }
-            function captionTransition(caption, duration) {
-              if (caption.hasClass("center-align")) {
-                caption.velocity({
+_removeDefine();
+})();
+(function() {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/slider.js", ["github:instagis/jquery_helper@0.2.1"], function($) {
+  var methods = {
+    init: function(options) {
+      var defaults = {
+        indicators: true,
+        height: 400,
+        transition: 500,
+        interval: 6000
+      };
+      options = $.extend(defaults, options);
+      return this.each(function() {
+        var $this = $(this);
+        var $slider = $this.find('ul.slides').first();
+        var $slides = $slider.find('li');
+        var $active_index = $slider.find('.active').index();
+        var $active;
+        if ($active_index != -1) {
+          $active = $slides.eq($active_index);
+        }
+        function captionTransition(caption, duration) {
+          if (caption.hasClass("center-align")) {
+            caption.velocity({
+              opacity: 0,
+              translateY: -100
+            }, {
+              duration: duration,
+              queue: false
+            });
+          } else if (caption.hasClass("right-align")) {
+            caption.velocity({
+              opacity: 0,
+              translateX: 100
+            }, {
+              duration: duration,
+              queue: false
+            });
+          } else if (caption.hasClass("left-align")) {
+            caption.velocity({
+              opacity: 0,
+              translateX: -100
+            }, {
+              duration: duration,
+              queue: false
+            });
+          }
+        }
+        function moveToSlide(index) {
+          if (index >= $slides.length)
+            index = 0;
+          else if (index < 0)
+            index = $slides.length - 1;
+          $active_index = $slider.find('.active').index();
+          if ($active_index != index) {
+            $active = $slides.eq($active_index);
+            $caption = $active.find('.caption');
+            $active.removeClass('active');
+            $active.velocity({opacity: 0}, {
+              duration: options.transition,
+              queue: false,
+              easing: 'easeOutQuad',
+              complete: function() {
+                $slides.not('.active').velocity({
                   opacity: 0,
-                  translateY: -100
-                }, {
-                  duration: duration,
-                  queue: false
-                });
-              } else if (caption.hasClass("right-align")) {
-                caption.velocity({
-                  opacity: 0,
-                  translateX: 100
-                }, {
-                  duration: duration,
-                  queue: false
-                });
-              } else if (caption.hasClass("left-align")) {
-                caption.velocity({
-                  opacity: 0,
-                  translateX: -100
-                }, {
-                  duration: duration,
-                  queue: false
-                });
-              }
-            }
-            function moveToSlide(index) {
-              if (index >= $slides.length)
-                index = 0;
-              else if (index < 0)
-                index = $slides.length - 1;
-              $active_index = $slider.find('.active').index();
-              if ($active_index != index) {
-                $active = $slides.eq($active_index);
-                $caption = $active.find('.caption');
-                $active.removeClass('active');
-                $active.velocity({opacity: 0}, {
-                  duration: options.transition,
-                  queue: false,
-                  easing: 'easeOutQuad',
-                  complete: function() {
-                    $slides.not('.active').velocity({
-                      opacity: 0,
-                      translateX: 0,
-                      translateY: 0
-                    }, {
-                      duration: 0,
-                      queue: false
-                    });
-                  }
-                });
-                captionTransition($caption, options.transition);
-                if (options.indicators) {
-                  $indicators.eq($active_index).removeClass('active');
-                }
-                $slides.eq(index).velocity({opacity: 1}, {
-                  duration: options.transition,
-                  queue: false,
-                  easing: 'easeOutQuad'
-                });
-                $slides.eq(index).find('.caption').velocity({
-                  opacity: 1,
                   translateX: 0,
                   translateY: 0
                 }, {
-                  duration: options.transition,
-                  delay: options.transition,
-                  queue: false,
-                  easing: 'easeOutQuad'
+                  duration: 0,
+                  queue: false
                 });
-                $slides.eq(index).addClass('active');
-                if (options.indicators) {
-                  $indicators.eq(index).addClass('active');
-                }
               }
-            }
-            if (!$this.hasClass('fullscreen')) {
-              if (options.indicators) {
-                $this.height(options.height + 40);
-              } else {
-                $this.height(options.height);
-              }
-              $slider.height(options.height);
-            }
-            $slides.find('.caption').each(function() {
-              captionTransition($(this), 0);
             });
-            $slides.find('img').each(function() {
-              $(this).css('background-image', 'url(' + $(this).attr('src') + ')');
-              $(this).attr('src', 'data:image/gif;base64,R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==');
-            });
+            captionTransition($caption, options.transition);
             if (options.indicators) {
-              var $indicators = $('<ul class="indicators"></ul>');
-              $slides.each(function(index) {
-                var $indicator = $('<li class="indicator-item"></li>');
-                $indicator.click(function() {
-                  var $parent = $slider.parent();
-                  var curr_index = $parent.find($(this)).index();
-                  moveToSlide(curr_index);
-                  clearInterval($interval);
-                  $interval = setInterval(function() {
-                    $active_index = $slider.find('.active').index();
-                    if ($slides.length == $active_index + 1)
-                      $active_index = 0;
-                    else
-                      $active_index += 1;
-                    moveToSlide($active_index);
-                  }, options.transition + options.interval);
-                });
-                $indicators.append($indicator);
-              });
-              $this.append($indicators);
-              $indicators = $this.find('ul.indicators').find('li.indicator-item');
+              $indicators.eq($active_index).removeClass('active');
             }
-            if ($active) {
-              $active.show();
-            } else {
-              $slides.first().addClass('active').velocity({opacity: 1}, {
-                duration: options.transition,
-                queue: false,
-                easing: 'easeOutQuad'
-              });
-              $active_index = 0;
-              $active = $slides.eq($active_index);
-              if (options.indicators) {
-                $indicators.eq($active_index).addClass('active');
-              }
+            $slides.eq(index).velocity({opacity: 1}, {
+              duration: options.transition,
+              queue: false,
+              easing: 'easeOutQuad'
+            });
+            $slides.eq(index).find('.caption').velocity({
+              opacity: 1,
+              translateX: 0,
+              translateY: 0
+            }, {
+              duration: options.transition,
+              delay: options.transition,
+              queue: false,
+              easing: 'easeOutQuad'
+            });
+            $slides.eq(index).addClass('active');
+            if (options.indicators) {
+              $indicators.eq(index).addClass('active');
             }
-            $active.find('img').each(function() {
-              $active.find('.caption').velocity({
-                opacity: 1,
-                translateX: 0,
-                translateY: 0
-              }, {
-                duration: options.transition,
-                queue: false,
-                easing: 'easeOutQuad'
-              });
-            });
-            $interval = setInterval(function() {
-              $active_index = $slider.find('.active').index();
-              moveToSlide($active_index + 1);
-            }, options.transition + options.interval);
-            var panning = false;
-            var swipeLeft = false;
-            var swipeRight = false;
-            $this.hammer({prevent_default: false}).bind('pan', function(e) {
-              if (e.gesture.pointerType === "touch") {
-                clearInterval($interval);
-                var direction = e.gesture.direction;
-                var x = e.gesture.deltaX;
-                var velocityX = e.gesture.velocityX;
-                $curr_slide = $slider.find('.active');
-                $curr_slide.velocity({translateX: x}, {
-                  duration: 50,
-                  queue: false,
-                  easing: 'easeOutQuad'
-                });
-                if (direction === 4 && (x > ($this.innerWidth() / 2) || velocityX < -0.65)) {
-                  swipeRight = true;
-                } else if (direction === 2 && (x < (-1 * $this.innerWidth() / 2) || velocityX > 0.65)) {
-                  swipeLeft = true;
-                }
-                var next_slide;
-                if (swipeLeft) {
-                  next_slide = $curr_slide.next();
-                  if (next_slide.length === 0) {
-                    next_slide = $slides.first();
-                  }
-                  next_slide.velocity({opacity: 1}, {
-                    duration: 300,
-                    queue: false,
-                    easing: 'easeOutQuad'
-                  });
-                }
-                if (swipeRight) {
-                  next_slide = $curr_slide.prev();
-                  if (next_slide.length === 0) {
-                    next_slide = $slides.last();
-                  }
-                  next_slide.velocity({opacity: 1}, {
-                    duration: 300,
-                    queue: false,
-                    easing: 'easeOutQuad'
-                  });
-                }
-              }
-            }).bind('panend', function(e) {
-              if (e.gesture.pointerType === "touch") {
-                $curr_slide = $slider.find('.active');
-                panning = false;
-                curr_index = $slider.find('.active').index();
-                if (!swipeRight && !swipeLeft) {
-                  $curr_slide.velocity({translateX: 0}, {
-                    duration: 300,
-                    queue: false,
-                    easing: 'easeOutQuad'
-                  });
-                } else if (swipeLeft) {
-                  moveToSlide(curr_index + 1);
-                  $curr_slide.velocity({translateX: -1 * $this.innerWidth()}, {
-                    duration: 300,
-                    queue: false,
-                    easing: 'easeOutQuad',
-                    complete: function() {
-                      $curr_slide.velocity({
-                        opacity: 0,
-                        translateX: 0
-                      }, {
-                        duration: 0,
-                        queue: false
-                      });
-                    }
-                  });
-                } else if (swipeRight) {
-                  moveToSlide(curr_index - 1);
-                  $curr_slide.velocity({translateX: $this.innerWidth()}, {
-                    duration: 300,
-                    queue: false,
-                    easing: 'easeOutQuad',
-                    complete: function() {
-                      $curr_slide.velocity({
-                        opacity: 0,
-                        translateX: 0
-                      }, {
-                        duration: 0,
-                        queue: false
-                      });
-                    }
-                  });
-                }
-                swipeLeft = false;
-                swipeRight = false;
-                clearInterval($interval);
-                $interval = setInterval(function() {
-                  $active_index = $slider.find('.active').index();
-                  if ($slides.length == $active_index + 1)
-                    $active_index = 0;
-                  else
-                    $active_index += 1;
-                  moveToSlide($active_index);
-                }, options.transition + options.interval);
-              }
-            });
-            $this.on('sliderPause', function() {
-              clearInterval($interval);
-            });
-            $this.on('sliderStart', function() {
+          }
+        }
+        if (!$this.hasClass('fullscreen')) {
+          if (options.indicators) {
+            $this.height(options.height + 40);
+          } else {
+            $this.height(options.height);
+          }
+          $slider.height(options.height);
+        }
+        $slides.find('.caption').each(function() {
+          captionTransition($(this), 0);
+        });
+        $slides.find('img').each(function() {
+          $(this).css('background-image', 'url(' + $(this).attr('src') + ')');
+          $(this).attr('src', 'data:image/gif;base64,R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==');
+        });
+        if (options.indicators) {
+          var $indicators = $('<ul class="indicators"></ul>');
+          $slides.each(function(index) {
+            var $indicator = $('<li class="indicator-item"></li>');
+            $indicator.click(function() {
+              var $parent = $slider.parent();
+              var curr_index = $parent.find($(this)).index();
+              moveToSlide(curr_index);
               clearInterval($interval);
               $interval = setInterval(function() {
                 $active_index = $slider.find('.active').index();
@@ -5516,29 +5575,177 @@ System.registerDynamic("src/material_components/slider.js", ["github:instagis/jq
                 moveToSlide($active_index);
               }, options.transition + options.interval);
             });
+            $indicators.append($indicator);
           });
-        },
-        pause: function() {
-          $(this).trigger('sliderPause');
-        },
-        start: function() {
-          $(this).trigger('sliderStart');
+          $this.append($indicators);
+          $indicators = $this.find('ul.indicators').find('li.indicator-item');
         }
-      };
-      $.fn.slider = function(methodOrOptions) {
-        if (methods[methodOrOptions]) {
-          return methods[methodOrOptions].apply(this, Array.prototype.slice.call(arguments, 1));
-        } else if (typeof methodOrOptions === 'object' || !methodOrOptions) {
-          return methods.init.apply(this, arguments);
+        if ($active) {
+          $active.show();
         } else {
-          $.error('Method ' + methodOrOptions + ' does not exist on jQuery.tooltip');
+          $slides.first().addClass('active').velocity({opacity: 1}, {
+            duration: options.transition,
+            queue: false,
+            easing: 'easeOutQuad'
+          });
+          $active_index = 0;
+          $active = $slides.eq($active_index);
+          if (options.indicators) {
+            $indicators.eq($active_index).addClass('active');
+          }
         }
-      };
-    }(jQuery));
-  })();
-  return _retrieveGlobal();
+        $active.find('img').each(function() {
+          $active.find('.caption').velocity({
+            opacity: 1,
+            translateX: 0,
+            translateY: 0
+          }, {
+            duration: options.transition,
+            queue: false,
+            easing: 'easeOutQuad'
+          });
+        });
+        $interval = setInterval(function() {
+          $active_index = $slider.find('.active').index();
+          moveToSlide($active_index + 1);
+        }, options.transition + options.interval);
+        var panning = false;
+        var swipeLeft = false;
+        var swipeRight = false;
+        $this.hammer({prevent_default: false}).bind('pan', function(e) {
+          if (e.gesture.pointerType === "touch") {
+            clearInterval($interval);
+            var direction = e.gesture.direction;
+            var x = e.gesture.deltaX;
+            var velocityX = e.gesture.velocityX;
+            $curr_slide = $slider.find('.active');
+            $curr_slide.velocity({translateX: x}, {
+              duration: 50,
+              queue: false,
+              easing: 'easeOutQuad'
+            });
+            if (direction === 4 && (x > ($this.innerWidth() / 2) || velocityX < -0.65)) {
+              swipeRight = true;
+            } else if (direction === 2 && (x < (-1 * $this.innerWidth() / 2) || velocityX > 0.65)) {
+              swipeLeft = true;
+            }
+            var next_slide;
+            if (swipeLeft) {
+              next_slide = $curr_slide.next();
+              if (next_slide.length === 0) {
+                next_slide = $slides.first();
+              }
+              next_slide.velocity({opacity: 1}, {
+                duration: 300,
+                queue: false,
+                easing: 'easeOutQuad'
+              });
+            }
+            if (swipeRight) {
+              next_slide = $curr_slide.prev();
+              if (next_slide.length === 0) {
+                next_slide = $slides.last();
+              }
+              next_slide.velocity({opacity: 1}, {
+                duration: 300,
+                queue: false,
+                easing: 'easeOutQuad'
+              });
+            }
+          }
+        }).bind('panend', function(e) {
+          if (e.gesture.pointerType === "touch") {
+            $curr_slide = $slider.find('.active');
+            panning = false;
+            curr_index = $slider.find('.active').index();
+            if (!swipeRight && !swipeLeft) {
+              $curr_slide.velocity({translateX: 0}, {
+                duration: 300,
+                queue: false,
+                easing: 'easeOutQuad'
+              });
+            } else if (swipeLeft) {
+              moveToSlide(curr_index + 1);
+              $curr_slide.velocity({translateX: -1 * $this.innerWidth()}, {
+                duration: 300,
+                queue: false,
+                easing: 'easeOutQuad',
+                complete: function() {
+                  $curr_slide.velocity({
+                    opacity: 0,
+                    translateX: 0
+                  }, {
+                    duration: 0,
+                    queue: false
+                  });
+                }
+              });
+            } else if (swipeRight) {
+              moveToSlide(curr_index - 1);
+              $curr_slide.velocity({translateX: $this.innerWidth()}, {
+                duration: 300,
+                queue: false,
+                easing: 'easeOutQuad',
+                complete: function() {
+                  $curr_slide.velocity({
+                    opacity: 0,
+                    translateX: 0
+                  }, {
+                    duration: 0,
+                    queue: false
+                  });
+                }
+              });
+            }
+            swipeLeft = false;
+            swipeRight = false;
+            clearInterval($interval);
+            $interval = setInterval(function() {
+              $active_index = $slider.find('.active').index();
+              if ($slides.length == $active_index + 1)
+                $active_index = 0;
+              else
+                $active_index += 1;
+              moveToSlide($active_index);
+            }, options.transition + options.interval);
+          }
+        });
+        $this.on('sliderPause', function() {
+          clearInterval($interval);
+        });
+        $this.on('sliderStart', function() {
+          clearInterval($interval);
+          $interval = setInterval(function() {
+            $active_index = $slider.find('.active').index();
+            if ($slides.length == $active_index + 1)
+              $active_index = 0;
+            else
+              $active_index += 1;
+            moveToSlide($active_index);
+          }, options.transition + options.interval);
+        });
+      });
+    },
+    pause: function() {
+      $(this).trigger('sliderPause');
+    },
+    start: function() {
+      $(this).trigger('sliderStart');
+    }
+  };
+  $.fn.slider = function(methodOrOptions) {
+    if (methods[methodOrOptions]) {
+      return methods[methodOrOptions].apply(this, Array.prototype.slice.call(arguments, 1));
+    } else if (typeof methodOrOptions === 'object' || !methodOrOptions) {
+      return methods.init.apply(this, arguments);
+    } else {
+      $.error('Method ' + methodOrOptions + ' does not exist on jQuery.tooltip');
+    }
+  };
 });
 
+_removeDefine();
+})();
 System.registerDynamic("src/material_components/tabs.js", ["github:instagis/jquery_helper@0.2.1"], false, function(__require, __exports, __module) {
   var _retrieveGlobal = System.get("@@global-helpers").prepareGlobal(__module.id, null, null);
   (function() {
@@ -5657,243 +5864,9 @@ System.registerDynamic("src/material_components/tabs.js", ["github:instagis/jque
   return _retrieveGlobal();
 });
 
-System.registerDynamic("src/material_components/waves.js", ["github:instagis/jquery_helper@0.2.1"], false, function(__require, __exports, __module) {
-  var _retrieveGlobal = System.get("@@global-helpers").prepareGlobal(__module.id, null, null);
-  (function() {
-    ;
-    (function(window) {
-      'use strict';
-      var Waves = Waves || {};
-      var $$ = document.querySelectorAll.bind(document);
-      function isWindow(obj) {
-        return obj !== null && obj === obj.window;
-      }
-      function getWindow(elem) {
-        return isWindow(elem) ? elem : elem.nodeType === 9 && elem.defaultView;
-      }
-      function offset(elem) {
-        var docElem,
-            win,
-            box = {
-              top: 0,
-              left: 0
-            },
-            doc = elem && elem.ownerDocument;
-        docElem = doc.documentElement;
-        if (typeof elem.getBoundingClientRect !== typeof undefined) {
-          box = elem.getBoundingClientRect();
-        }
-        win = getWindow(doc);
-        return {
-          top: box.top + win.pageYOffset - docElem.clientTop,
-          left: box.left + win.pageXOffset - docElem.clientLeft
-        };
-      }
-      function convertStyle(obj) {
-        var style = '';
-        for (var a in obj) {
-          if (obj.hasOwnProperty(a)) {
-            style += (a + ':' + obj[a] + ';');
-          }
-        }
-        return style;
-      }
-      var Effect = {
-        duration: 750,
-        show: function(e, element) {
-          if (e.button === 2) {
-            return false;
-          }
-          var el = element || this;
-          var ripple = document.createElement('div');
-          ripple.className = 'waves-ripple';
-          el.appendChild(ripple);
-          var pos = offset(el);
-          var relativeY = (e.pageY - pos.top);
-          var relativeX = (e.pageX - pos.left);
-          var scale = 'scale(' + ((el.clientWidth / 100) * 10) + ')';
-          if ('touches' in e) {
-            relativeY = (e.touches[0].pageY - pos.top);
-            relativeX = (e.touches[0].pageX - pos.left);
-          }
-          ripple.setAttribute('data-hold', Date.now());
-          ripple.setAttribute('data-scale', scale);
-          ripple.setAttribute('data-x', relativeX);
-          ripple.setAttribute('data-y', relativeY);
-          var rippleStyle = {
-            'top': relativeY + 'px',
-            'left': relativeX + 'px'
-          };
-          ripple.className = ripple.className + ' waves-notransition';
-          ripple.setAttribute('style', convertStyle(rippleStyle));
-          ripple.className = ripple.className.replace('waves-notransition', '');
-          rippleStyle['-webkit-transform'] = scale;
-          rippleStyle['-moz-transform'] = scale;
-          rippleStyle['-ms-transform'] = scale;
-          rippleStyle['-o-transform'] = scale;
-          rippleStyle.transform = scale;
-          rippleStyle.opacity = '1';
-          rippleStyle['-webkit-transition-duration'] = Effect.duration + 'ms';
-          rippleStyle['-moz-transition-duration'] = Effect.duration + 'ms';
-          rippleStyle['-o-transition-duration'] = Effect.duration + 'ms';
-          rippleStyle['transition-duration'] = Effect.duration + 'ms';
-          rippleStyle['-webkit-transition-timing-function'] = 'cubic-bezier(0.250, 0.460, 0.450, 0.940)';
-          rippleStyle['-moz-transition-timing-function'] = 'cubic-bezier(0.250, 0.460, 0.450, 0.940)';
-          rippleStyle['-o-transition-timing-function'] = 'cubic-bezier(0.250, 0.460, 0.450, 0.940)';
-          rippleStyle['transition-timing-function'] = 'cubic-bezier(0.250, 0.460, 0.450, 0.940)';
-          ripple.setAttribute('style', convertStyle(rippleStyle));
-        },
-        hide: function(e) {
-          TouchHandler.touchup(e);
-          var el = this;
-          var width = el.clientWidth * 1.4;
-          var ripple = null;
-          var ripples = el.getElementsByClassName('waves-ripple');
-          if (ripples.length > 0) {
-            ripple = ripples[ripples.length - 1];
-          } else {
-            return false;
-          }
-          var relativeX = ripple.getAttribute('data-x');
-          var relativeY = ripple.getAttribute('data-y');
-          var scale = ripple.getAttribute('data-scale');
-          var diff = Date.now() - Number(ripple.getAttribute('data-hold'));
-          var delay = 350 - diff;
-          if (delay < 0) {
-            delay = 0;
-          }
-          setTimeout(function() {
-            var style = {
-              'top': relativeY + 'px',
-              'left': relativeX + 'px',
-              'opacity': '0',
-              '-webkit-transition-duration': Effect.duration + 'ms',
-              '-moz-transition-duration': Effect.duration + 'ms',
-              '-o-transition-duration': Effect.duration + 'ms',
-              'transition-duration': Effect.duration + 'ms',
-              '-webkit-transform': scale,
-              '-moz-transform': scale,
-              '-ms-transform': scale,
-              '-o-transform': scale,
-              'transform': scale
-            };
-            ripple.setAttribute('style', convertStyle(style));
-            setTimeout(function() {
-              try {
-                el.removeChild(ripple);
-              } catch (e) {
-                return false;
-              }
-            }, Effect.duration);
-          }, delay);
-        },
-        wrapInput: function(elements) {
-          for (var a = 0; a < elements.length; a++) {
-            var el = elements[a];
-            if (el.tagName.toLowerCase() === 'input') {
-              var parent = el.parentNode;
-              if (parent.tagName.toLowerCase() === 'i' && parent.className.indexOf('waves-effect') !== -1) {
-                continue;
-              }
-              var wrapper = document.createElement('i');
-              wrapper.className = el.className + ' waves-input-wrapper';
-              var elementStyle = el.getAttribute('style');
-              if (!elementStyle) {
-                elementStyle = '';
-              }
-              wrapper.setAttribute('style', elementStyle);
-              el.className = 'waves-button-input';
-              el.removeAttribute('style');
-              parent.replaceChild(wrapper, el);
-              wrapper.appendChild(el);
-            }
-          }
-        }
-      };
-      var TouchHandler = {
-        touches: 0,
-        allowEvent: function(e) {
-          var allow = true;
-          if (e.type === 'touchstart') {
-            TouchHandler.touches += 1;
-          } else if (e.type === 'touchend' || e.type === 'touchcancel') {
-            setTimeout(function() {
-              if (TouchHandler.touches > 0) {
-                TouchHandler.touches -= 1;
-              }
-            }, 500);
-          } else if (e.type === 'mousedown' && TouchHandler.touches > 0) {
-            allow = false;
-          }
-          return allow;
-        },
-        touchup: function(e) {
-          TouchHandler.allowEvent(e);
-        }
-      };
-      function getWavesEffectElement(e) {
-        if (TouchHandler.allowEvent(e) === false) {
-          return null;
-        }
-        var element = null;
-        var target = e.target || e.srcElement;
-        while (target.parentElement !== null) {
-          if (!(target instanceof SVGElement) && target.className.indexOf('waves-effect') !== -1) {
-            element = target;
-            break;
-          } else if (target.classList.contains('waves-effect')) {
-            element = target;
-            break;
-          }
-          target = target.parentElement;
-        }
-        return element;
-      }
-      function showEffect(e) {
-        var element = getWavesEffectElement(e);
-        if (element !== null) {
-          Effect.show(e, element);
-          if ('ontouchstart' in window) {
-            element.addEventListener('touchend', Effect.hide, false);
-            element.addEventListener('touchcancel', Effect.hide, false);
-          }
-          element.addEventListener('mouseup', Effect.hide, false);
-          element.addEventListener('mouseleave', Effect.hide, false);
-        }
-      }
-      Waves.displayEffect = function(options) {
-        options = options || {};
-        if ('duration' in options) {
-          Effect.duration = options.duration;
-        }
-        Effect.wrapInput($$('.waves-effect'));
-        if ('ontouchstart' in window) {
-          document.body.addEventListener('touchstart', showEffect, false);
-        }
-        document.body.addEventListener('mousedown', showEffect, false);
-      };
-      Waves.attach = function(element) {
-        if (element.tagName.toLowerCase() === 'input') {
-          Effect.wrapInput([element]);
-          element = element.parentElement;
-        }
-        if ('ontouchstart' in window) {
-          element.addEventListener('touchstart', showEffect, false);
-        }
-        element.addEventListener('mousedown', showEffect, false);
-      };
-      window.Waves = Waves;
-      document.addEventListener('DOMContentLoaded', function() {
-        Waves.displayEffect();
-      }, false);
-    })(window);
-  })();
-  return _retrieveGlobal();
-});
-
 (function() {
 var _removeDefine = System.get("@@amd-helpers").createDefine();
-define("src/material_helper.js", ["github:instagis/jquery_helper@0.2.1", "github:julianshapiro/velocity@1.2.3", "npm:hammerjs@2.0.6", "src/material_components/animation.js", "src/material_components/buttons.js", "src/material_components/cards.js", "src/material_components/character_counter.js", "src/material_components/chips.js", "src/material_components/dropdown.js", "src/material_components/jquery.easing.1.3.js", "src/material_components/jquery.hammer.js", "src/material_components/leanModal.js", "src/material_components/materialbox.js", "src/material_components/parallax.js", "src/material_components/pushpin.js", "src/material_components/scrollspy.js", "src/material_components/sideNav.js", "src/material_components/slider.js", "src/material_components/tabs.js", "src/material_components/waves.js"], function($, Velocity, hammerjs) {
+define("src/material_helper.js", ["github:instagis/jquery_helper@0.2.1", "github:julianshapiro/velocity@1.2.3", "npm:hammerjs@2.0.6", "src/material_components/waves.js", "src/material_components/animation.js", "src/material_components/buttons.js", "src/material_components/cards.js", "src/material_components/character_counter.js", "src/material_components/chips.js", "src/material_components/dropdown.js", "src/material_components/jquery.easing.1.3.js", "src/material_components/jquery.hammer.js", "src/material_components/leanModal.js", "src/material_components/materialbox.js", "src/material_components/parallax.js", "src/material_components/pushpin.js", "src/material_components/scrollspy.js", "src/material_components/sideNav.js", "src/material_components/slider.js", "src/material_components/tabs.js"], function($, Velocity, hammerjs, Waves) {
   'use strict';
   var Materialize = {};
   Materialize.guid = (function() {
