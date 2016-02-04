@@ -1,7 +1,24 @@
 define([
 	'jquery',
 	'velocity',
-	'hammerjs'
+	'hammerjs',
+	"material_components/animation",
+	"material_components/buttons",
+	"material_components/cards",
+	"material_components/character_counter",
+	"material_components/chips",
+	"material_components/dropdown",
+	"material_components/jquery.easing.1.3",
+	"material_components/jquery.hammer",
+	"material_components/leanModal",
+	"material_components/materialbox",
+	"material_components/parallax",
+	"material_components/pushpin",
+	"material_components/scrollspy",
+	"material_components/sideNav",
+	"material_components/slider",
+	"material_components/tabs",
+	"material_components/waves"
 ], function ($, Velocity, hammerjs) {
 
 	'use strict';
@@ -748,253 +765,226 @@ define([
 
 
 
-		require([
-			"material_components/animation",
-			"material_components/buttons",
-			"material_components/cards",
-
-			"material_components/character_counter",
-			"material_components/chips",
-			//"material_components/collapsible",
-			//"material_components/date_picker/picker",
-			//"material_components/date_picker/picker.date",
-			"material_components/dropdown",
-			"material_components/jquery.easing.1.3",
-			"material_components/jquery.hammer",
-			"material_components/leanModal",
-			"material_components/materialbox",
-			"material_components/parallax",
-			"material_components/pushpin",
-			"material_components/scrollspy",
-			"material_components/sideNav",
-			"material_components/slider",
-			"material_components/tabs",
-			//"material_components/tooltip",
-			"material_components/waves",
-			//"material_components/toasts",
-		], function () {
 
 
+		// Dismissible Collections
+		$('.dismissable').each(function () {
+			$(this).hammer({
+				prevent_default: false
+			}).bind('pan', function (e) {
+				if (e.gesture.pointerType === "touch") {
+					var $this = $(this);
+					var direction = e.gesture.direction;
+					var x = e.gesture.deltaX;
+					var velocityX = e.gesture.velocityX;
 
+					$this.velocity({
+						translateX: x
+					}, {
+						duration: 50,
+						queue: false,
+						easing: 'easeOutQuad'
+					});
 
-			// Dismissible Collections
-			$('.dismissable').each(function () {
-				$(this).hammer({
-					prevent_default: false
-				}).bind('pan', function (e) {
-					if (e.gesture.pointerType === "touch") {
-						var $this = $(this);
-						var direction = e.gesture.direction;
-						var x = e.gesture.deltaX;
-						var velocityX = e.gesture.velocityX;
+					// Swipe Left
+					if (direction === 4 && (x > ($this.innerWidth() / 2) || velocityX < -0.75)) {
+						swipeLeft = true;
+					}
+
+					// Swipe Right
+					if (direction === 2 && (x < (-1 * $this.innerWidth() / 2) || velocityX > 0.75)) {
+						swipeRight = true;
+					}
+				}
+			}).bind('panend', function (e) {
+				// Reset if collection is moved back into original position
+				if (Math.abs(e.gesture.deltaX) < ($(this).innerWidth() / 2)) {
+					swipeRight = false;
+					swipeLeft = false;
+				}
+
+				if (e.gesture.pointerType === "touch") {
+					var $this = $(this);
+					if (swipeLeft || swipeRight) {
+						var fullWidth;
+						if (swipeLeft) {
+							fullWidth = $this.innerWidth();
+						} else {
+							fullWidth = -1 * $this.innerWidth();
+						}
 
 						$this.velocity({
-							translateX: x
+							translateX: fullWidth,
 						}, {
-							duration: 50,
+							duration: 100,
+							queue: false,
+							easing: 'easeOutQuad',
+							complete: function () {
+								$this.css('border', 'none');
+								$this.velocity({
+									height: 0,
+									padding: 0,
+								}, {
+									duration: 200,
+									queue: false,
+									easing: 'easeOutQuad',
+									complete: function () {
+										$this.remove();
+									}
+								});
+							}
+						});
+					} else {
+						$this.velocity({
+							translateX: 0,
+						}, {
+							duration: 100,
 							queue: false,
 							easing: 'easeOutQuad'
 						});
-
-						// Swipe Left
-						if (direction === 4 && (x > ($this.innerWidth() / 2) || velocityX < -0.75)) {
-							swipeLeft = true;
-						}
-
-						// Swipe Right
-						if (direction === 2 && (x < (-1 * $this.innerWidth() / 2) || velocityX > 0.75)) {
-							swipeRight = true;
-						}
 					}
-				}).bind('panend', function (e) {
-					// Reset if collection is moved back into original position
-					if (Math.abs(e.gesture.deltaX) < ($(this).innerWidth() / 2)) {
-						swipeRight = false;
-						swipeLeft = false;
-					}
+					swipeLeft = false;
+					swipeRight = false;
+				}
+			});
 
-					if (e.gesture.pointerType === "touch") {
-						var $this = $(this);
-						if (swipeLeft || swipeRight) {
-							var fullWidth;
-							if (swipeLeft) {
-								fullWidth = $this.innerWidth();
-							} else {
-								fullWidth = -1 * $this.innerWidth();
-							}
+		});
 
-							$this.velocity({
-								translateX: fullWidth,
-							}, {
-								duration: 100,
-								queue: false,
-								easing: 'easeOutQuad',
-								complete: function () {
-									$this.css('border', 'none');
-									$this.velocity({
-										height: 0,
-										padding: 0,
-									}, {
-										duration: 200,
-										queue: false,
-										easing: 'easeOutQuad',
-										complete: function () {
-											$this.remove();
-										}
-									});
-								}
-							});
-						} else {
-							$this.velocity({
-								translateX: 0,
-							}, {
-								duration: 100,
-								queue: false,
-								easing: 'easeOutQuad'
-							});
-						}
-						swipeLeft = false;
-						swipeRight = false;
+		// Text based inputs
+		var input_selector = 'input[type=text], input[type=password], input[type=email], input[type=url], input[type=tel], input[type=number], input[type=search], textarea';
+
+		// Handle HTML5 autofocus
+		$('input[autofocus]').siblings('label, i').addClass('active');
+
+		// Add active if form auto complete
+		$(document).on('change', input_selector, function () {
+			if ($(this).val().length !== 0 || $(this).attr('placeholder') !== undefined) {
+				$(this).siblings('label').addClass('active');
+			}
+			validate_field($(this));
+		});
+
+
+		Materialize.updateTextFields();
+
+
+		// HTML DOM FORM RESET handling
+		$(document).on('reset', function (e) {
+			var formReset = $(e.target);
+			if (formReset.is('form')) {
+				formReset.find(input_selector).removeClass('valid').removeClass('invalid');
+				formReset.find(input_selector).each(function () {
+					if ($(this).attr('value') === '') {
+						$(this).siblings('label, i').removeClass('active');
 					}
 				});
 
-			});
-
-			// Text based inputs
-			var input_selector = 'input[type=text], input[type=password], input[type=email], input[type=url], input[type=tel], input[type=number], input[type=search], textarea';
-
-			// Handle HTML5 autofocus
-			$('input[autofocus]').siblings('label, i').addClass('active');
-
-			// Add active if form auto complete
-			$(document).on('change', input_selector, function () {
-				if ($(this).val().length !== 0 || $(this).attr('placeholder') !== undefined) {
-					$(this).siblings('label').addClass('active');
-				}
-				validate_field($(this));
-			});
-
-
-			Materialize.updateTextFields();
-
-
-			// HTML DOM FORM RESET handling
-			$(document).on('reset', function (e) {
-				var formReset = $(e.target);
-				if (formReset.is('form')) {
-					formReset.find(input_selector).removeClass('valid').removeClass('invalid');
-					formReset.find(input_selector).each(function () {
-						if ($(this).attr('value') === '') {
-							$(this).siblings('label, i').removeClass('active');
-						}
-					});
-
-					// Reset select
-					formReset.find('select.initialized').each(function () {
-						var reset_text = formReset.find('option[selected]').text();
-						formReset.siblings('input.select-dropdown').val(reset_text);
-					});
-				}
-			});
-
-			// Add active when element has focus
-			$(document).on('focus', input_selector, function () {
-				$(this).siblings('label, i').addClass('active');
-			});
-
-			$(document).on('blur', input_selector, function () {
-				var $inputElement = $(this);
-				if ($inputElement.val().length === 0 && $inputElement[0].validity.badInput !== true && $inputElement.attr('placeholder') === undefined) {
-					$inputElement.siblings('label, i').removeClass('active');
-				}
-
-				if ($inputElement.val().length === 0 && $inputElement[0].validity.badInput !== true && $inputElement.attr('placeholder') !== undefined) {
-					$inputElement.siblings('i').removeClass('active');
-				}
-				validate_field($inputElement);
-			});
-
-
-
-
-			// Textarea Auto Resize
-			var hiddenDiv = $('.hiddendiv').first();
-			if (!hiddenDiv.length) {
-				hiddenDiv = $('<div class="hiddendiv common"></div>');
-				$('body').append(hiddenDiv);
+				// Reset select
+				formReset.find('select.initialized').each(function () {
+					var reset_text = formReset.find('option[selected]').text();
+					formReset.siblings('input.select-dropdown').val(reset_text);
+				});
 			}
-			var text_area_selector = '.materialize-textarea';
+		});
 
-			function textareaAutoResize($textarea) {
-				// Set font properties of hiddenDiv
+		// Add active when element has focus
+		$(document).on('focus', input_selector, function () {
+			$(this).siblings('label, i').addClass('active');
+		});
 
-				var fontFamily = $textarea.css('font-family');
-				var fontSize = $textarea.css('font-size');
-
-				if (fontSize) {
-					hiddenDiv.css('font-size', fontSize);
-				}
-				if (fontFamily) {
-					hiddenDiv.css('font-family', fontFamily);
-				}
-
-				if ($textarea.attr('wrap') === "off") {
-					hiddenDiv.css('overflow-wrap', "normal")
-						.css('white-space', "pre");
-				}
-
-
-
-
-				hiddenDiv.text($textarea.val() + '\n');
-				var content = hiddenDiv.html().replace(/\n/g, '<br>');
-				hiddenDiv.html(content);
-
-
-				// When textarea is hidden, width goes crazy.
-				// Approximate with half of window size
-
-				if ($textarea.is(':visible')) {
-					hiddenDiv.css('width', $textarea.width());
-				} else {
-					hiddenDiv.css('width', $(window).width() / 2);
-				}
-
-				$textarea.css('height', hiddenDiv.height());
+		$(document).on('blur', input_selector, function () {
+			var $inputElement = $(this);
+			if ($inputElement.val().length === 0 && $inputElement[0].validity.badInput !== true && $inputElement.attr('placeholder') === undefined) {
+				$inputElement.siblings('label, i').removeClass('active');
 			}
 
-			$(text_area_selector).each(function () {
-				var $textarea = $(this);
-				if ($textarea.val().length) {
-					textareaAutoResize($textarea);
-				}
-			});
-
-			$('body').on('keyup keydown autoresize', text_area_selector, function () {
-				textareaAutoResize($(this));
-			});
+			if ($inputElement.val().length === 0 && $inputElement[0].validity.badInput !== true && $inputElement.attr('placeholder') !== undefined) {
+				$inputElement.siblings('i').removeClass('active');
+			}
+			validate_field($inputElement);
+		});
 
 
-			// File Input Path
-
-			$(document).on('change', '.file-field input[type="file"]', function () {
-				var file_field = $(this).closest('.file-field');
-				var path_input = file_field.find('input.file-path');
-				var files = $(this)[0].files;
-				var file_names = [];
-				for (var i = 0; i < files.length; i++) {
-					file_names.push(files[i].name);
-				}
-				path_input.val(file_names.join(", "));
-				path_input.trigger('change');
-			});
 
 
-			/****************
-			 *  Range Input  *
-			 ****************/
+		// Textarea Auto Resize
+		var hiddenDiv = $('.hiddendiv').first();
+		if (!hiddenDiv.length) {
+			hiddenDiv = $('<div class="hiddendiv common"></div>');
+			$('body').append(hiddenDiv);
+		}
+		var text_area_selector = '.materialize-textarea';
 
-			/*var range_type = 'input[type=range]';
+		function textareaAutoResize($textarea) {
+			// Set font properties of hiddenDiv
+
+			var fontFamily = $textarea.css('font-family');
+			var fontSize = $textarea.css('font-size');
+
+			if (fontSize) {
+				hiddenDiv.css('font-size', fontSize);
+			}
+			if (fontFamily) {
+				hiddenDiv.css('font-family', fontFamily);
+			}
+
+			if ($textarea.attr('wrap') === "off") {
+				hiddenDiv.css('overflow-wrap', "normal")
+					.css('white-space', "pre");
+			}
+
+
+
+
+			hiddenDiv.text($textarea.val() + '\n');
+			var content = hiddenDiv.html().replace(/\n/g, '<br>');
+			hiddenDiv.html(content);
+
+
+			// When textarea is hidden, width goes crazy.
+			// Approximate with half of window size
+
+			if ($textarea.is(':visible')) {
+				hiddenDiv.css('width', $textarea.width());
+			} else {
+				hiddenDiv.css('width', $(window).width() / 2);
+			}
+
+			$textarea.css('height', hiddenDiv.height());
+		}
+
+		$(text_area_selector).each(function () {
+			var $textarea = $(this);
+			if ($textarea.val().length) {
+				textareaAutoResize($textarea);
+			}
+		});
+
+		$('body').on('keyup keydown autoresize', text_area_selector, function () {
+			textareaAutoResize($(this));
+		});
+
+
+		// File Input Path
+
+		$(document).on('change', '.file-field input[type="file"]', function () {
+			var file_field = $(this).closest('.file-field');
+			var path_input = file_field.find('input.file-path');
+			var files = $(this)[0].files;
+			var file_names = [];
+			for (var i = 0; i < files.length; i++) {
+				file_names.push(files[i].name);
+			}
+			path_input.val(file_names.join(", "));
+			path_input.trigger('change');
+		});
+
+
+		/****************
+		 *  Range Input  *
+		 ****************/
+
+		/*var range_type = 'input[type=range]';
 			var range_mousedown = false;
 			var left;
 
@@ -1111,11 +1101,11 @@ define([
 			});
 */
 
-			console.zdebug('Material helper', {
-				Velocity: Velocity,
-				hammerjs: hammerjs
-			});
+		console.zdebug('Material helper', {
+			Velocity: Velocity,
+			hammerjs: hammerjs
 		});
+
 
 
 
