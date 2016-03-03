@@ -4,9 +4,9 @@
   "jspm": {
     "format": "amd",
     "dependencies": {
-      "hammerjs": "npm:hammerjs@^2.0.6",
-      "jquery": "github:instagis/jquery_helper@^0.2.1",
-      "velocity": "github:julianshapiro/velocity@^1.2.3"
+      "hammerjs": "npm:hammerjs@^2",
+      "jquery": "github:instagis/jquery_helper@^0.4",
+      "velocity": "github:julianshapiro/velocity@^1.2"
     }
   }
 }
