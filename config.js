@@ -20,28 +20,17 @@ System.config({
 
   map: {
     "hammerjs": "npm:hammerjs@2.0.6",
-    "jquery": "github:instagis/jquery_helper@0.4.3",
+    "jquery": "github:instagis/jquery_helper@0.5.2",
     "underscore": "npm:lodash@3.10.1",
     "velocity": "github:julianshapiro/velocity@1.2.3",
-    "github:DataTables/DataTables@1.10.11": {
+    "github:instagis/jquery_helper@0.5.2": {
       "css": "github:systemjs/plugin-css@0.1.20",
-      "jquery": "npm:jquery@2.2.1"
-    },
-    "github:components/jqueryui@1.11.4": {
-      "jquery": "npm:jquery@2.2.1"
-    },
-    "github:instagis/jquery_helper@0.4.3": {
-      "bootstrap": "github:twbs/bootstrap@3.3.6",
-      "css": "github:systemjs/plugin-css@0.1.20",
-      "datatables": "github:DataTables/DataTables@1.10.11",
       "jquery": "npm:jquery@2.2.1",
       "jquery-csv": "github:evanplaice/jquery-csv@0.8.1",
       "jquery-serializejson": "npm:jquery-serializejson@2.6.2",
-      "jquery-ui": "github:components/jqueryui@1.11.4",
       "jquery.cookie": "github:carhartl/jquery-cookie@1.4.1",
       "jquery.waitforChild": "npm:jquery.waitforChild@0.1.1",
-      "lodash": "npm:lodash@3.10.1",
-      "select2": "github:select2/select2@4.0.1"
+      "lodash": "github:lodash/lodash@3.10.1"
     },
     "github:jspm/nodelibs-assert@0.1.0": {
       "assert": "npm:assert@1.3.0"
@@ -51,12 +40,6 @@ System.config({
     },
     "github:jspm/nodelibs-util@0.1.0": {
       "util": "npm:util@0.10.3"
-    },
-    "github:select2/select2@4.0.1": {
-      "jquery": "npm:jquery@2.2.1"
-    },
-    "github:twbs/bootstrap@3.3.6": {
-      "jquery": "github:components/jquery@2.2.1"
     },
     "npm:assert@1.3.0": {
       "util": "npm:util@0.10.3"

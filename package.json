@@ -1,11 +1,12 @@
 {
   "name": "material_helper",
   "main": "dist/material_helper",
+  "version": "0.2.0",
   "jspm": {
     "format": "amd",
     "dependencies": {
       "hammerjs": "npm:hammerjs@^2",
-      "jquery": "github:instagis/jquery_helper@^0.4",
+      "jquery": "github:instagis/jquery_helper@~0.5",
       "velocity": "github:julianshapiro/velocity@^1.2"
     }
   }
