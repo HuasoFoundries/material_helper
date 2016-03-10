@@ -1,12 +1,6 @@
-!function(e){function r(e,r,o){return 4===arguments.length?t.apply(this,arguments):void n(e,{declarative:!0,deps:r,declare:o})}function t(e,r,t,o){n(e,{declarative:!1,deps:r,executingRequire:t,execute:o})}function n(e,r){r.name=e,e in p||(p[e]=r),r.normalizedDeps=r.deps}function o(e,r){if(r[e.groupIndex]=r[e.groupIndex]||[],-1==v.call(r[e.groupIndex],e)){r[e.groupIndex].push(e);for(var t=0,n=e.normalizedDeps.length;n>t;t++){var a=e.normalizedDeps[t],u=p[a];if(u&&!u.evaluated){var d=e.groupIndex+(u.declarative!=e.declarative);if(void 0===u.groupIndex||u.groupIndex<d){if(void 0!==u.groupIndex&&(r[u.groupIndex].splice(v.call(r[u.groupIndex],u),1),0==r[u.groupIndex].length))throw new TypeError("Mixed dependency cycle detected");u.groupIndex=d}o(u,r)}}}}function a(e){var r=p[e];r.groupIndex=0;var t=[];o(r,t);for(var n=!!r.declarative==t.length%2,a=t.length-1;a>=0;a--){for(var u=t[a],i=0;i<u.length;i++){var s=u[i];n?d(s):l(s)}n=!n}}function u(e){return x[e]||(x[e]={name:e,dependencies:[],exports:{},importers:[]})}function d(r){if(!r.module){var t=r.module=u(r.name),n=r.module.exports,o=r.declare.call(e,function(e,r){if(t.locked=!0,"object"==typeof e)for(var o in e)n[o]=e[o];else n[e]=r;for(var a=0,u=t.importers.length;u>a;a++){var d=t.importers[a];if(!d.locked)for(var i=0;i<d.dependencies.length;++i)d.dependencies[i]===t&&d.setters[i](n)}return t.locked=!1,r},r.name);t.setters=o.setters,t.execute=o.execute;for(var a=0,i=r.normalizedDeps.length;i>a;a++){var l,s=r.normalizedDeps[a],c=p[s],v=x[s];v?l=v.exports:c&&!c.declarative?l=c.esModule:c?(d(c),v=c.module,l=v.exports):l=f(s),v&&v.importers?(v.importers.push(t),t.dependencies.push(v)):t.dependencies.push(null),t.setters[a]&&t.setters[a](l)}}}function i(e){var r,t=p[e];if(t)t.declarative?c(e,[]):t.evaluated||l(t),r=t.module.exports;else if(r=f(e),!r)throw new Error("Unable to load dependency "+e+".");return(!t||t.declarative)&&r&&r.__useDefault?r["default"]:r}function l(r){if(!r.module){var t={},n=r.module={exports:t,id:r.name};if(!r.executingRequire)for(var o=0,a=r.normalizedDeps.length;a>o;o++){var u=r.normalizedDeps[o],d=p[u];d&&l(d)}r.evaluated=!0;var c=r.execute.call(e,function(e){for(var t=0,n=r.deps.length;n>t;t++)if(r.deps[t]==e)return i(r.normalizedDeps[t]);throw new TypeError("Module "+e+" not declared as a dependency.")},t,n);c&&(n.exports=c),t=n.exports,t&&t.__esModule?r.esModule=t:r.esModule=s(t)}}function s(r){if(r===e)return r;var t={};if("object"==typeof r||"function"==typeof r)if(g){var n;for(var o in r)(n=Object.getOwnPropertyDescriptor(r,o))&&h(t,o,n)}else{var a=r&&r.hasOwnProperty;for(var o in r)(!a||r.hasOwnProperty(o))&&(t[o]=r[o])}return t["default"]=r,h(t,"__useDefault",{value:!0}),t}function c(r,t){var n=p[r];if(n&&!n.evaluated&&n.declarative){t.push(r);for(var o=0,a=n.normalizedDeps.length;a>o;o++){var u=n.normalizedDeps[o];-1==v.call(t,u)&&(p[u]?c(u,t):f(u))}n.evaluated||(n.evaluated=!0,n.module.execute.call(e))}}function f(e){if(D[e])return D[e];if("@node/"==e.substr(0,6))return y(e.substr(6));var r=p[e];if(!r)throw"Module "+e+" not present.";return a(e),c(e,[]),p[e]=void 0,r.declarative&&h(r.module.exports,"__esModule",{value:!0}),D[e]=r.declarative?r.module.exports:r.esModule}var p={},v=Array.prototype.indexOf||function(e){for(var r=0,t=this.length;t>r;r++)if(this[r]===e)return r;return-1},g=!0;try{Object.getOwnPropertyDescriptor({a:0},"a")}catch(m){g=!1}var h;!function(){try{Object.defineProperty({},"a",{})&&(h=Object.defineProperty)}catch(e){h=function(e,r,t){try{e[r]=t.value||t.get.call(e)}catch(n){}}}}();var x={},y="undefined"!=typeof System&&System._nodeRequire||"undefined"!=typeof require&&require.resolve&&"undefined"!=typeof process&&require,D={"@empty":{}};return function(e,n,o){return function(a){a(function(a){for(var u={_nodeRequire:y,register:r,registerDynamic:t,get:f,set:function(e,r){D[e]=r},newModule:function(e){return e}},d=0;d<n.length;d++)(function(e,r){r&&r.__esModule?D[e]=r:D[e]=s(r)})(n[d],arguments[d]);o(u);var i=f(e[0]);if(e.length>1)for(var d=1;d<e.length;d++)f(e[d]);return i.__useDefault?i["default"]:i})}}}("undefined"!=typeof self?self:global)
-
-(["1"], [], function($__System) {
-
-!function(e){function n(e,n){for(var t=e.split(".");t.length;)n=n[t.shift()];return n}function t(n){if(Object.keys)Object.keys(e).forEach(n);else for(var t in e)f.call(e,t)&&n(t)}function r(n){t(function(t){if(-1==a.call(l,t)){try{var r=e[t]}catch(o){l.push(t)}n(t,r)}})}var o,i=$__System,f=Object.prototype.hasOwnProperty,a=Array.prototype.indexOf||function(e){for(var n=0,t=this.length;t>n;n++)if(this[n]===e)return n;return-1},l=["_g","sessionStorage","localStorage","clipboardData","frames","frameElement","external","mozAnimationStartTime","webkitStorageInfo","webkitIndexedDB"];i.set("@@global-helpers",i.newModule({prepareGlobal:function(t,i,f){var a=e.define;e.define=void 0,e.exports=void 0,e.module&&e.module.exports&&(e.module=void 0);var l;if(f){l={};for(var u in f)l[u]=e[u],e[u]=f[u]}return i||(o={},r(function(e,n){o[e]=n})),function(){var t;if(i)t=n(i,e);else{var f,u,s={};r(function(e,n){o[e]!==n&&"undefined"!=typeof n&&(s[e]=n,"undefined"!=typeof f?u||f===n||(u=!0):f=n)}),t=u?s:f}if(l)for(var c in l)e[c]=l[c];return e.define=a,t}}}))}("undefined"!=typeof self?self:global);
-!function(){var t=$__System;if("undefined"!=typeof window&&"undefined"!=typeof document&&window.location)var s=location.protocol+"//"+location.hostname+(location.port?":"+location.port:"");t.set("@@cjs-helpers",t.newModule({getPathVars:function(t){var n,o=t.lastIndexOf("!");n=-1!=o?t.substr(0,o):t;var e=n.split("/");return e.pop(),e=e.join("/"),"file:///"==n.substr(0,8)?(n=n.substr(7),e=e.substr(7),isWindows&&(n=n.substr(1),e=e.substr(1))):s&&n.substr(0,s.length)===s&&(n=n.substr(s.length),e=e.substr(s.length)),{filename:n,dirname:e}}}))}();
-!function(e){function n(e,n){e=e.replace(l,"");var r=e.match(s),i=(r[1].split(",")[n]||"require").replace(p,""),t=c[i]||(c[i]=new RegExp(u+i+a,"g"));t.lastIndex=0;for(var o,f=[];o=t.exec(e);)f.push(o[2]||o[3]);return f}function r(e,n,i,t){if("object"==typeof e&&!(e instanceof Array))return r.apply(null,Array.prototype.splice.call(arguments,1,arguments.length-1));if("string"==typeof e&&"function"==typeof n&&(e=[e]),!(e instanceof Array)){if("string"==typeof e){var f=o.get(e);return f.__useDefault?f["default"]:f}throw new TypeError("Invalid require")}for(var l=[],u=0;u<e.length;u++)l.push(o["import"](e[u],t));Promise.all(l).then(function(e){n&&n.apply(null,e)},i)}function i(i,t,l){"string"!=typeof i&&(l=t,t=i,i=null),t instanceof Array||(l=t,t=["require","exports","module"].splice(0,l.length)),"function"!=typeof l&&(l=function(e){return function(){return e}}(l)),void 0===t[t.length-1]&&t.pop();var u,a,s;-1!=(u=f.call(t,"require"))&&(t.splice(u,1),i||(t=t.concat(n(l.toString(),u)))),-1!=(a=f.call(t,"exports"))&&t.splice(a,1),-1!=(s=f.call(t,"module"))&&t.splice(s,1);var p={name:i,deps:t,execute:function(n,i,f){for(var p=[],c=0;c<t.length;c++)p.push(n(t[c]));f.uri=f.id,f.config=function(){},-1!=s&&p.splice(s,0,f),-1!=a&&p.splice(a,0,i),-1!=u&&p.splice(u,0,function(e,i,t){return"string"==typeof e&&"function"!=typeof i?n(e):r.call(o,e,i,t,f.id)});var d=l.apply(-1==a?e:i,p);return"undefined"==typeof d&&f&&(d=f.exports),"undefined"!=typeof d?d:void 0}};if(i)d.anonDefine||d.isBundle?(d.anonDefine&&d.anonDefine.name&&o.registerDynamic(d.anonDefine.name,d.anonDefine.deps,!1,d.anonDefine.execute),d.anonDefine=null):d.anonDefine=p,d.isBundle=!0,o.registerDynamic(i,p.deps,!1,p.execute);else{if(d.anonDefine)throw new TypeError("Multiple defines for anonymous module");d.anonDefine=p}}function t(n){d.anonDefine=null,d.isBundle=!1;var r=e.module,t=e.exports,o=e.define;return e.module=void 0,e.exports=void 0,e.define=i,function(){e.define=o,e.module=r,e.exports=t}}var o=$__System,f=Array.prototype.indexOf||function(e){for(var n=0,r=this.length;r>n;n++)if(this[n]===e)return n;return-1},l=/(\/\*([\s\S]*?)\*\/|([^:]|^)\/\/(.*)$)/gm,u="(?:^|[^$_a-zA-Z\\xA0-\\uFFFF.])",a="\\s*\\(\\s*(\"([^\"]+)\"|'([^']+)')\\s*\\)",s=/\(([^\)]*)\)/,p=/^\s+|\s+$/g,c={};i.amd={};var d={isBundle:!1,anonDefine:null};o.set("@@amd-helpers",o.newModule({createDefine:t,require:r,define:i,lastModule:d})),o.amdDefine=i,o.amdRequire=r}("undefined"!=typeof self?self:global);
+"bundle";
 (function() {
-var _removeDefine = $__System.get("@@amd-helpers").createDefine();
+var _removeDefine = System.get("@@amd-helpers").createDefine();
 ;
 (function(window) {
   if (window.jQuery) {
@@ -290,7 +284,7 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
   if (typeof module === "object" && typeof module.exports === "object") {
     module.exports = factory();
   } else if (typeof define === "function" && define.amd) {
-    define("2", [], factory);
+    define("github:julianshapiro/velocity@1.2.3/velocity.js", [], factory);
   } else {
     factory();
   }
@@ -2165,16 +2159,16 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
 _removeDefine();
 })();
 (function() {
-var _removeDefine = $__System.get("@@amd-helpers").createDefine();
-define("3", ["2"], function(main) {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("github:julianshapiro/velocity@1.2.3.js", ["github:julianshapiro/velocity@1.2.3/velocity.js"], function(main) {
   return main;
 });
 
 _removeDefine();
 })();
 (function() {
-var _removeDefine = $__System.get("@@amd-helpers").createDefine();
-define("4", ["5"], function() {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/waves.js", ["github:instagis/jquery_helper@0.5.2.js"], function() {
   'use strict';
   var Waves = Waves || {};
   var $$ = document.querySelectorAll.bind(document);
@@ -2404,8 +2398,8 @@ define("4", ["5"], function() {
 _removeDefine();
 })();
 (function() {
-var _removeDefine = $__System.get("@@amd-helpers").createDefine();
-define("6", ["5"], function(jQuery) {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/animation.js", ["github:instagis/jquery_helper@0.5.2.js"], function(jQuery) {
   jQuery.extend(jQuery.easing, {easeInOutMaterial: function(x, t, b, c, d) {
       if ((t /= d / 2) < 1)
         return c / 2 * t * t + b;
@@ -2416,8 +2410,8 @@ define("6", ["5"], function(jQuery) {
 _removeDefine();
 })();
 (function() {
-var _removeDefine = $__System.get("@@amd-helpers").createDefine();
-define("7", ["5"], function($) {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/buttons.js", ["github:instagis/jquery_helper@0.5.2.js"], function($) {
   $(document).ready(function() {
     $.fn.reverse = [].reverse;
     $(document).on('mouseenter.fixedActionBtn', '.fixed-action-btn', function(e) {
@@ -2479,8 +2473,8 @@ define("7", ["5"], function($) {
 _removeDefine();
 })();
 (function() {
-var _removeDefine = $__System.get("@@amd-helpers").createDefine();
-define("8", ["5"], function($) {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/cards.js", ["github:instagis/jquery_helper@0.5.2.js"], function($) {
   $(document).ready(function() {
     $(document).on('click.card', '.card', function(e) {
       if ($(this).find('> .card-reveal').length) {
@@ -2508,8 +2502,8 @@ define("8", ["5"], function($) {
 _removeDefine();
 })();
 (function() {
-var _removeDefine = $__System.get("@@amd-helpers").createDefine();
-define("9", ["5"], function($) {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/character_counter.js", ["github:instagis/jquery_helper@0.5.2.js"], function($) {
   $.fn.characterCounter = function() {
     return this.each(function() {
       var itHasLengthAttribute = $(this).attr('length') !== undefined;
@@ -2552,8 +2546,8 @@ define("9", ["5"], function($) {
 _removeDefine();
 })();
 (function() {
-var _removeDefine = $__System.get("@@amd-helpers").createDefine();
-define("a", ["5"], function($) {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/chips.js", ["github:instagis/jquery_helper@0.5.2.js"], function($) {
   $(document).ready(function() {
     $(document).on('click.chip', '.chip .material-icons', function(e) {
       $(this).parent().remove();
@@ -2564,8 +2558,8 @@ define("a", ["5"], function($) {
 _removeDefine();
 })();
 (function() {
-var _removeDefine = $__System.get("@@amd-helpers").createDefine();
-define("b", ["5"], function($) {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/dropdown.js", ["github:instagis/jquery_helper@0.5.2.js"], function($) {
   $.fn.scrollTo = function(elem) {
     $(this).scrollTop($(this).scrollTop() - $(this).offset().top + $(elem).offset().top);
     return this;
@@ -2715,8 +2709,8 @@ define("b", ["5"], function($) {
 _removeDefine();
 })();
 (function() {
-var _removeDefine = $__System.get("@@amd-helpers").createDefine();
-define("c", ["5"], function(jQuery) {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/jquery.easing.1.3.js", ["github:instagis/jquery_helper@0.5.2.js"], function(jQuery) {
   jQuery.easing['jswing'] = jQuery.easing['swing'];
   jQuery.extend(jQuery.easing, {
     def: 'easeOutQuad',
@@ -2896,7 +2890,7 @@ define("c", ["5"], function(jQuery) {
 
 _removeDefine();
 })();
-$__System.registerDynamic("d", [], true, function($__require, exports, module) {
+System.registerDynamic("npm:process@0.11.2/browser.js", [], true, function($__require, exports, module) {
   ;
   var global = this,
       __define = global.define;
@@ -2988,37 +2982,37 @@ $__System.registerDynamic("d", [], true, function($__require, exports, module) {
   return module.exports;
 });
 
-$__System.registerDynamic("e", ["d"], true, function($__require, exports, module) {
+System.registerDynamic("npm:process@0.11.2.js", ["npm:process@0.11.2/browser.js"], true, function($__require, exports, module) {
   ;
   var global = this,
       __define = global.define;
   global.define = undefined;
-  module.exports = $__require('d');
+  module.exports = $__require('npm:process@0.11.2/browser.js');
   global.define = __define;
   return module.exports;
 });
 
-$__System.registerDynamic("f", ["e"], true, function($__require, exports, module) {
+System.registerDynamic("github:jspm/nodelibs-process@0.1.2/index.js", ["npm:process@0.11.2.js"], true, function($__require, exports, module) {
   ;
   var global = this,
       __define = global.define;
   global.define = undefined;
-  module.exports = $__System._nodeRequire ? process : $__require('e');
+  module.exports = System._nodeRequire ? process : $__require('npm:process@0.11.2.js');
   global.define = __define;
   return module.exports;
 });
 
-$__System.registerDynamic("10", ["f"], true, function($__require, exports, module) {
+System.registerDynamic("github:jspm/nodelibs-process@0.1.2.js", ["github:jspm/nodelibs-process@0.1.2/index.js"], true, function($__require, exports, module) {
   ;
   var global = this,
       __define = global.define;
   global.define = undefined;
-  module.exports = $__require('f');
+  module.exports = $__require('github:jspm/nodelibs-process@0.1.2/index.js');
   global.define = __define;
   return module.exports;
 });
 
-$__System.registerDynamic("11", ["10"], true, function($__require, exports, module) {
+System.registerDynamic("npm:hammerjs@2.0.6/hammer.js", ["github:jspm/nodelibs-process@0.1.2.js"], true, function($__require, exports, module) {
   ;
   var global = this,
       __define = global.define;
@@ -4442,26 +4436,26 @@ $__System.registerDynamic("11", ["10"], true, function($__require, exports, modu
         window[exportName] = Hammer;
       }
     })(window, document, 'Hammer');
-  })($__require('10'));
+  })($__require('github:jspm/nodelibs-process@0.1.2.js'));
   global.define = __define;
   return module.exports;
 });
 
-$__System.registerDynamic("12", ["11"], true, function($__require, exports, module) {
+System.registerDynamic("npm:hammerjs@2.0.6.js", ["npm:hammerjs@2.0.6/hammer.js"], true, function($__require, exports, module) {
   ;
   var global = this,
       __define = global.define;
   global.define = undefined;
-  module.exports = $__require('11');
+  module.exports = $__require('npm:hammerjs@2.0.6/hammer.js');
   global.define = __define;
   return module.exports;
 });
 
 (function() {
-var _removeDefine = $__System.get("@@amd-helpers").createDefine();
+var _removeDefine = System.get("@@amd-helpers").createDefine();
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
-    define("13", ["5", "12"], factory);
+    define("src/material_components/jquery.hammer.js", ["github:instagis/jquery_helper@0.5.2.js", "npm:hammerjs@2.0.6.js"], factory);
   } else if (typeof exports === 'object') {
     factory(require('jquery'), require('hammerjs'));
   } else {
@@ -4493,8 +4487,8 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
 _removeDefine();
 })();
 (function() {
-var _removeDefine = $__System.get("@@amd-helpers").createDefine();
-define("14", ["5"], function($) {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/leanModal.js", ["github:instagis/jquery_helper@0.5.2.js"], function($) {
   var _stack = 0,
       _lastID = 0,
       _generateID = function() {
@@ -4649,8 +4643,8 @@ define("14", ["5"], function($) {
 _removeDefine();
 })();
 (function() {
-var _removeDefine = $__System.get("@@amd-helpers").createDefine();
-define("15", ["5"], function($) {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/materialbox.js", ["github:instagis/jquery_helper@0.5.2.js"], function($) {
   $.fn.materialbox = function() {
     return this.each(function() {
       if ($(this).hasClass('initialized')) {
@@ -4848,8 +4842,8 @@ define("15", ["5"], function($) {
 _removeDefine();
 })();
 (function() {
-var _removeDefine = $__System.get("@@amd-helpers").createDefine();
-define("16", ["5"], function($) {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/parallax.js", ["github:instagis/jquery_helper@0.5.2.js"], function($) {
   $.fn.parallax = function() {
     var window_width = $(window).width();
     return this.each(function(i) {
@@ -4900,8 +4894,8 @@ define("16", ["5"], function($) {
 _removeDefine();
 })();
 (function() {
-var _removeDefine = $__System.get("@@amd-helpers").createDefine();
-define("17", ["5"], function($) {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/pushpin.js", ["github:instagis/jquery_helper@0.5.2.js"], function($) {
   $(document).ready(function() {
     $.fn.pushpin = function(options) {
       var defaults = {
@@ -4952,8 +4946,8 @@ define("17", ["5"], function($) {
 _removeDefine();
 })();
 (function() {
-var _removeDefine = $__System.get("@@amd-helpers").createDefine();
-define("18", ["5"], function($) {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/scrollspy.js", ["github:instagis/jquery_helper@0.5.2.js"], function($) {
   var jWindow = $(window);
   var elements = [];
   var elementsInView = [];
@@ -5124,8 +5118,8 @@ define("18", ["5"], function($) {
 _removeDefine();
 })();
 (function() {
-var _removeDefine = $__System.get("@@amd-helpers").createDefine();
-define("19", ["5"], function($) {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/sideNav.js", ["github:instagis/jquery_helper@0.5.2.js"], function($) {
   var methods = {
     init: function(options) {
       var defaults = {
@@ -5451,8 +5445,8 @@ define("19", ["5"], function($) {
 _removeDefine();
 })();
 (function() {
-var _removeDefine = $__System.get("@@amd-helpers").createDefine();
-define("1a", ["5"], function($) {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_components/slider.js", ["github:instagis/jquery_helper@0.5.2.js"], function($) {
   var methods = {
     init: function(options) {
       var defaults = {
@@ -5753,7 +5747,7 @@ define("1a", ["5"], function($) {
 _removeDefine();
 })();
 (function() {
-var _removeDefine = $__System.get("@@amd-helpers").createDefine();
+var _removeDefine = System.get("@@amd-helpers").createDefine();
 "format amd";
 !function(e) {
   function r(e, r, o) {
@@ -6092,7 +6086,7 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
     "format amd";
     (function(factory) {
       if (typeof define === 'function' && define.amd) {
-        define("1b", ["3"], factory);
+        define("github:instagis/jquery_helper@0.5.2/dist/jquery_helper.js", ["3"], factory);
       } else if (typeof exports === 'object') {
         factory(require('jquery'));
       } else {
@@ -25501,15 +25495,15 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
 _removeDefine();
 })();
 (function() {
-var _removeDefine = $__System.get("@@amd-helpers").createDefine();
-define("5", ["1b"], function(main) {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("github:instagis/jquery_helper@0.5.2.js", ["github:instagis/jquery_helper@0.5.2/dist/jquery_helper.js"], function(main) {
   return main;
 });
 
 _removeDefine();
 })();
-$__System.registerDynamic("1c", ["5"], false, function(__require, __exports, __module) {
-  var _retrieveGlobal = $__System.get("@@global-helpers").prepareGlobal(__module.id, null, null);
+System.registerDynamic("src/material_components/tabs.js", ["github:instagis/jquery_helper@0.5.2.js"], false, function(__require, __exports, __module) {
+  var _retrieveGlobal = System.get("@@global-helpers").prepareGlobal(__module.id, null, null);
   (function() {
     (function($) {
       var methods = {
@@ -25627,8 +25621,8 @@ $__System.registerDynamic("1c", ["5"], false, function(__require, __exports, __m
 });
 
 (function() {
-var _removeDefine = $__System.get("@@amd-helpers").createDefine();
-define("1", ["5", "3", "12", "4", "6", "7", "8", "9", "a", "b", "c", "13", "14", "15", "16", "17", "18", "19", "1a", "1c"], function($, Velocity, hammerjs, Waves) {
+var _removeDefine = System.get("@@amd-helpers").createDefine();
+define("src/material_helper.js", ["github:instagis/jquery_helper@0.5.2.js", "github:julianshapiro/velocity@1.2.3.js", "npm:hammerjs@2.0.6.js", "src/material_components/waves.js", "src/material_components/animation.js", "src/material_components/buttons.js", "src/material_components/cards.js", "src/material_components/character_counter.js", "src/material_components/chips.js", "src/material_components/dropdown.js", "src/material_components/jquery.easing.1.3.js", "src/material_components/jquery.hammer.js", "src/material_components/leanModal.js", "src/material_components/materialbox.js", "src/material_components/parallax.js", "src/material_components/pushpin.js", "src/material_components/scrollspy.js", "src/material_components/sideNav.js", "src/material_components/slider.js", "src/material_components/tabs.js"], function($, Velocity, hammerjs, Waves) {
   'use strict';
   var Materialize = {};
   Materialize.guid = (function() {
@@ -26157,8 +26151,4 @@ define("1", ["5", "3", "12", "4", "6", "7", "8", "9", "a", "b", "c", "13", "14",
 
 _removeDefine();
 })();
-})
-(function(factory) {
-  factory();
-});
 //# sourceMappingURL=material_helper.js.map
