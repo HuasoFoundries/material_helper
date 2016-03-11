@@ -20,10 +20,10 @@ System.config({
 
   map: {
     "hammerjs": "npm:hammerjs@2.0.6",
-    "jquery": "github:instagis/jquery_helper@0.5.5",
+    "jquery": "github:instagis/jquery_helper@0.5.6",
     "underscore": "npm:lodash@3.10.1",
     "velocity": "github:julianshapiro/velocity@1.2.3",
-    "github:instagis/jquery_helper@0.5.5": {
+    "github:instagis/jquery_helper@0.5.6": {
       "css": "github:systemjs/plugin-css@0.1.20",
       "jquery": "npm:jquery@2.2.1",
       "jquery-csv": "github:evanplaice/jquery-csv@0.8.1",
