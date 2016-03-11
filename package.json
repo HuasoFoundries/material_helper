@@ -1,7 +1,7 @@
 {
   "name": "material_helper",
   "main": "dist/material_helper",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "jspm": {
     "format": "amd",
     "dependencies": {
