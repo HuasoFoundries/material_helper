@@ -16,7 +16,7 @@ default: build
 
 
 build:
-	# jspm update
+	jspm update
 	jspm bundle-sfx src/material_helper.js - jquery dist/material_helper.js --format amd
 	sed -i s/"$(JQUERYVERSION)"/"jquery"/g dist/material_helper.js
 
