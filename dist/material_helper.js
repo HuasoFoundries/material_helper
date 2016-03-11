@@ -6403,6 +6403,6 @@ _removeDefine();
 })();
 })
 (function(factory) {
-  define(["github:instagis/jquery_helper@0.5.6.js"], factory);
+  define(["jquery"], factory);
 });
 //# sourceMappingURL=material_helper.js.map
