@@ -1,13 +1,12 @@
 {
   "name": "material_helper",
   "main": "dist/material_helper",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "jspm": {
     "format": "amd",
-    "dependencies": {
-      "jquery": "npm:jquery@^2.2.1"
-    },
+
     "devDependencies": {
+      "jquery": "npm:jquery@^2.2.1",
       "hammerjs": "npm:hammerjs@^2",
       "velocity": "github:julianshapiro/velocity@^1.2"
     }
