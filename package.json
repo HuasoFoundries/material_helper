@@ -1,13 +1,32 @@
 {
   "name": "material_helper",
   "main": "dist/material_helper",
-  "version": "0.3.5",
+  "version": "0.4.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HuasoFoundries/material_helper"
+  },
+  "keywords": [
+    "jspm",
+    "systemjs",
+    "materialize",
+    "loader",
+    "plugin"
+  ],
+  "author": "Felipe Figueroa <amenadiel@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/HuasoFoundries/material_helper/issues"
+  },
   "jspm": {
     "format": "amd",
     "devDependencies": {
-      "hammerjs": "npm:hammerjs@^2",
+      "hammerjs": "github:hammerjs/hammer.js@^2.0.6",
       "jquery": "npm:jquery@^2.2.1",
       "velocity": "github:julianshapiro/velocity@^1.2"
     }
+  },
+  "devDependencies": {
+    "jspm": "^0.16.27"
   }
 }

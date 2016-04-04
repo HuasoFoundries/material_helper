@@ -22,8 +22,6 @@ define([
 
 ], function ($, Velocity, hammerjs, Waves) {
 
-	'use strict';
-
 	var Materialize = {};
 
 	// Unique ID
@@ -119,6 +117,25 @@ define([
 			didScroll = true;
 		});
 
+		var conditionallyFire = function (windowScroll, value) {
+			var selector = value.selector,
+				offset = value.offset,
+				callback = value.callback;
+
+			var currentElement = document.querySelector(selector);
+			if (currentElement !== null) {
+				var elementOffset = currentElement.getBoundingClientRect().top + window.pageYOffset;
+
+				if (windowScroll > (elementOffset + offset) && value.done !== true) {
+
+					var callbackFunc = callback;
+					callbackFunc();
+					value.done = true;
+
+				}
+			}
+		};
+
 		// Rate limit to 100ms
 		setInterval(function () {
 			if (didScroll) {
@@ -129,31 +146,29 @@ define([
 				for (var i = 0; i < options.length; i++) {
 					// Get options from each line
 					var value = options[i];
-					var selector = value.selector,
-						offset = value.offset,
-						callback = value.callback;
+					conditionallyFire(windowScroll, value);
 
-					var currentElement = document.querySelector(selector);
-					if (currentElement !== null) {
-						var elementOffset = currentElement.getBoundingClientRect().top + window.pageYOffset;
-
-						if (windowScroll > (elementOffset + offset)) {
-							if (value.done !== true) {
-								var callbackFunc = new Function(callback);
-								callbackFunc();
-								value.done = true;
-							}
-						}
-					}
 				}
 			}
 		}, 100);
 	};
 
+	// Text based inputs
+	Materialize.input_selector = [
+		'input[type=text]',
+		'input[type=password]',
+		'input[type=email]',
+		'input[type=url]',
+		'input[type=tel]',
+		'input[type=number]',
+		'input[type=search]',
+		'textarea'
+	].join(',');
+
 	// Function to update labels of text fields
 	Materialize.updateTextFields = function () {
-		var input_selector = 'input[type=text], input[type=password], input[type=email], input[type=url], input[type=tel], input[type=number], input[type=search], textarea';
-		$(input_selector).each(function (index, element) {
+
+		$(Materialize.input_selector).each(function (index, element) {
 			if ($(element).val().length > 0 || $(this).attr('placeholder') !== undefined || $(element)[0].validity.badInput === true) {
 				$(this).siblings('label').addClass('active');
 			} else {
@@ -164,7 +179,7 @@ define([
 
 	var validate_field = function (object) {
 		var hasLength = object.attr('length') !== undefined;
-		var lenAttr = parseInt(object.attr('length'));
+		var lenAttr = parseInt(object.attr('length'), 10);
 		var len = object.val().length;
 
 		if (object.val().length === 0 && object[0].validity.badInput === false) {
@@ -172,18 +187,17 @@ define([
 				object.removeClass('valid');
 				object.removeClass('invalid');
 			}
-		} else {
-			if (object.hasClass('validate')) {
-				// Check for character counter attributes
-				if ((object.is(':valid') && hasLength && (len <= lenAttr)) || (object.is(':valid') && !hasLength)) {
-					object.removeClass('invalid');
-					object.addClass('valid');
-				} else {
-					object.removeClass('valid');
-					object.addClass('invalid');
-				}
+		} else if (object.hasClass('validate')) {
+			// Check for character counter attributes
+			if ((object.is(':valid') && hasLength && (len <= lenAttr)) || (object.is(':valid') && !hasLength)) {
+				object.removeClass('invalid');
+				object.addClass('valid');
+			} else {
+				object.removeClass('valid');
+				object.addClass('invalid');
 			}
 		}
+
 	};
 
 	// Make option as selected and scroll to selected position
@@ -286,6 +300,16 @@ define([
 			}
 
 			/**
+			 * Get panel header from a children element
+			 * @param  {Object} object Jquery object
+			 * @return {Object} panel header object
+			 */
+			function getPanelHeader(object) {
+
+				return object.closest('li > .collapsible-header');
+			}
+
+			/**
 			 * Check if object is children of panel header
 			 * @param  {Object}  object Jquery object
 			 * @return {Boolean} true if it is children
@@ -297,19 +321,7 @@ define([
 				return panelHeader.length > 0;
 			}
 
-			/**
-			 * Get panel header from a children element
-			 * @param  {Object} object Jquery object
-			 * @return {Object} panel header object
-			 */
-			function getPanelHeader(object) {
-
-				return object.closest('li > .collapsible-header');
-			}
-
 			/*****  End Helper Functions  *****/
-
-
 
 			if (options.accordion || collapsible_type === "accordion" || collapsible_type === undefined) { // Handle Accordion
 				// Add click handler to only direct collapsible header children
@@ -424,7 +436,8 @@ define([
 			// escape double quotes
 			var sanitizedLabelHtml = label.html().replace(/"/g, '&quot;');
 
-			var $newSelect = $('<input type="text" class="select-dropdown" readonly="true" ' + (($select.is(':disabled')) ? 'disabled' : '') + ' data-activates="select-options-' +
+			var $newSelect = $('<input type="text" class="select-dropdown" readonly="true" ' + (($select.is(':disabled')) ? 'disabled' : '') +
+				' data-activates="select-options-' +
 				uniqueID + '" value="' + sanitizedLabelHtml + '"/>');
 			$select.before($newSelect);
 			$newSelect.before(dropdownIcon);
@@ -759,14 +772,8 @@ define([
 
 	$(document).ready(function () {
 
-
-
 		var swipeLeft = false;
 		var swipeRight = false;
-
-
-
-
 
 		// Dismissible Collections
 		$('.dismissable').each(function () {
@@ -815,7 +822,7 @@ define([
 						}
 
 						$this.velocity({
-							translateX: fullWidth,
+							translateX: fullWidth
 						}, {
 							duration: 100,
 							queue: false,
@@ -824,7 +831,7 @@ define([
 								$this.css('border', 'none');
 								$this.velocity({
 									height: 0,
-									padding: 0,
+									padding: 0
 								}, {
 									duration: 200,
 									queue: false,
@@ -837,7 +844,7 @@ define([
 						});
 					} else {
 						$this.velocity({
-							translateX: 0,
+							translateX: 0
 						}, {
 							duration: 100,
 							queue: false,
@@ -851,14 +858,13 @@ define([
 
 		});
 
-		// Text based inputs
-		var input_selector = 'input[type=text], input[type=password], input[type=email], input[type=url], input[type=tel], input[type=number], input[type=search], textarea';
+
 
 		// Handle HTML5 autofocus
 		$('input[autofocus]').siblings('label, i').addClass('active');
 
 		// Add active if form auto complete
-		$(document).on('change', input_selector, function () {
+		$(document).on('change', Materialize.input_selector, function () {
 			if ($(this).val().length !== 0 || $(this).attr('placeholder') !== undefined) {
 				$(this).siblings('label').addClass('active');
 			}
@@ -873,8 +879,8 @@ define([
 		$(document).on('reset', function (e) {
 			var formReset = $(e.target);
 			if (formReset.is('form')) {
-				formReset.find(input_selector).removeClass('valid').removeClass('invalid');
-				formReset.find(input_selector).each(function () {
+				formReset.find(Materialize.input_selector).removeClass('valid').removeClass('invalid');
+				formReset.find(Materialize.input_selector).each(function () {
 					if ($(this).attr('value') === '') {
 						$(this).siblings('label, i').removeClass('active');
 					}
@@ -889,11 +895,11 @@ define([
 		});
 
 		// Add active when element has focus
-		$(document).on('focus', input_selector, function () {
+		$(document).on('focus', Materialize.input_selector, function () {
 			$(this).siblings('label, i').addClass('active');
 		});
 
-		$(document).on('blur', input_selector, function () {
+		$(document).on('blur', Materialize.input_selector, function () {
 			var $inputElement = $(this);
 			if ($inputElement.val().length === 0 && $inputElement[0].validity.badInput !== true && $inputElement.attr('placeholder') === undefined) {
 				$inputElement.siblings('label, i').removeClass('active');
@@ -904,8 +910,6 @@ define([
 			}
 			validate_field($inputElement);
 		});
-
-
 
 
 		// Textarea Auto Resize
@@ -933,8 +937,6 @@ define([
 				hiddenDiv.css('overflow-wrap', "normal")
 					.css('white-space', "pre");
 			}
-
-
 
 
 			hiddenDiv.text($textarea.val() + '\n');
@@ -1102,24 +1104,8 @@ define([
 			});
 */
 
-		console.zdebug('Material helper', {
-			Velocity: Velocity,
-			hammerjs: hammerjs
-		});
-
-
-
 
 	}); // End of $(document).ready
 
-
-
-
-
 	return Materialize;
-
-
-
-
-
 });

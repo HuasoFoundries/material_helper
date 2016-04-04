@@ -10,7 +10,7 @@ jqversion:
 	@echo $(JQUERYVERSION)
 
 default: build
-.PHONY: build
+.PHONY: build tag version
 
 
 
@@ -20,3 +20,18 @@ build:
 	jspm bundle-sfx src/material_helper.js - jquery dist/material_helper.js --format amd
 	sed -i s/"$(JQUERYVERSION)"/"jquery"/g dist/material_helper.js
 
+
+update_version:
+	@echo "Current version is " ${VERSION}
+	@echo "Next version is " $(v)
+	sed -i s/"$(VERSION)"/"$(v)"/g package.json
+
+tag_and_push:
+		git add --all
+		git commit -a -m "Tag v $(v) $(m)"
+		git tag v$(v)
+		git push
+		git push --tags
+
+tag: update_version build tag_and_push		
+		
