@@ -554,7 +554,7 @@ define([
 		});
 	};
 
-	/*$.fn.tooltip = function (options) {
+	$.fn.tooltip = function (options) {
 		var timeout = null,
 			counter = null,
 			started = false,
@@ -768,7 +768,7 @@ define([
 				}
 			});
 		});
-	};*/
+	};
 
 	$(document).ready(function () {
 
@@ -857,7 +857,6 @@ define([
 			});
 
 		});
-
 
 
 		// Handle HTML5 autofocus

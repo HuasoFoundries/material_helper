@@ -3342,7 +3342,6 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
   function MouseInput() {
     this.evEl = MOUSE_ELEMENT_EVENTS;
     this.evWin = MOUSE_WINDOW_EVENTS;
-    this.allow = true;
     this.pressed = false;
     Input.apply(this, arguments);
   }
@@ -3354,7 +3353,7 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
       if (eventType & INPUT_MOVE && ev.which !== 1) {
         eventType = INPUT_END;
       }
-      if (!this.pressed || !this.allow) {
+      if (!this.pressed) {
         return;
       }
       if (eventType & INPUT_END) {
@@ -3525,23 +3524,27 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
     }
     return [uniqueArray(targetTouches.concat(changedTargetTouches), 'identifier', true), changedTargetTouches];
   }
+  var DEDUP_TIMEOUT = 2500;
+  var DEDUP_DISTANCE = 25;
   function TouchMouseInput() {
     Input.apply(this, arguments);
     var handler = bindFn(this.handler, this);
     this.touch = new TouchInput(this.manager, handler);
     this.mouse = new MouseInput(this.manager, handler);
+    this.primaryTouch = null;
+    this.lastTouches = [];
   }
   inherit(TouchMouseInput, Input, {
     handler: function TMEhandler(manager, inputEvent, inputData) {
       var isTouch = (inputData.pointerType == INPUT_TYPE_TOUCH),
           isMouse = (inputData.pointerType == INPUT_TYPE_MOUSE);
-      if (isTouch) {
-        this.mouse.allow = false;
-      } else if (isMouse && !this.mouse.allow) {
+      if (isMouse && inputData.sourceCapabilities && inputData.sourceCapabilities.firesTouchEvents) {
         return;
       }
-      if (inputEvent & (INPUT_END | INPUT_CANCEL)) {
-        this.mouse.allow = true;
+      if (isTouch) {
+        recordTouches.call(this, inputEvent, inputData);
+      } else if (isMouse && isSyntheticEvent.call(this, inputData)) {
+        return;
       }
       this.callback(manager, inputEvent, inputData);
     },
@@ -3550,6 +3553,45 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
       this.mouse.destroy();
     }
   });
+  function recordTouches(eventType, eventData) {
+    if (eventType & INPUT_START) {
+      this.primaryTouch = eventData.changedPointers[0].identifier;
+      setLastTouch.call(this, eventData);
+    } else if (eventType & (INPUT_END | INPUT_CANCEL)) {
+      setLastTouch.call(this, eventData);
+    }
+  }
+  function setLastTouch(eventData) {
+    var touch = eventData.changedPointers[0];
+    if (touch.identifier === this.primaryTouch) {
+      var lastTouch = {
+        x: touch.clientX,
+        y: touch.clientY
+      };
+      this.lastTouches.push(lastTouch);
+      var lts = this.lastTouches;
+      var removeLastTouch = function() {
+        var i = lts.indexOf(lastTouch);
+        if (i > -1) {
+          lts.splice(i, 1);
+        }
+      };
+      setTimeout(removeLastTouch, DEDUP_TIMEOUT);
+    }
+  }
+  function isSyntheticEvent(eventData) {
+    var x = eventData.srcEvent.clientX,
+        y = eventData.srcEvent.clientY;
+    for (var i = 0; i < this.lastTouches.length; i++) {
+      var t = this.lastTouches[i];
+      var dx = Math.abs(x - t.x),
+          dy = Math.abs(y - t.y);
+      if (dx <= DEDUP_DISTANCE && dy <= DEDUP_DISTANCE) {
+        return true;
+      }
+    }
+    return false;
+  }
   var PREFIXED_TOUCH_ACTION = prefixed(TEST_ELEMENT.style, 'touchAction');
   var NATIVE_TOUCH_ACTION = PREFIXED_TOUCH_ACTION !== undefined;
   var TOUCH_ACTION_COMPUTE = 'compute';
@@ -3558,6 +3600,7 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
   var TOUCH_ACTION_NONE = 'none';
   var TOUCH_ACTION_PAN_X = 'pan-x';
   var TOUCH_ACTION_PAN_Y = 'pan-y';
+  var TOUCH_ACTION_MAP = getTouchActionProps();
   function TouchAction(manager, value) {
     this.manager = manager;
     this.set(value);
@@ -3567,7 +3610,7 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
       if (value == TOUCH_ACTION_COMPUTE) {
         value = this.compute();
       }
-      if (NATIVE_TOUCH_ACTION && this.manager.element.style) {
+      if (NATIVE_TOUCH_ACTION && this.manager.element.style && TOUCH_ACTION_MAP[value]) {
         this.manager.element.style[PREFIXED_TOUCH_ACTION] = value;
       }
       this.actions = value.toLowerCase().trim();
@@ -3585,9 +3628,6 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
       return cleanTouchActions(actions.join(' '));
     },
     preventDefaults: function(input) {
-      if (NATIVE_TOUCH_ACTION) {
-        return;
-      }
       var srcEvent = input.srcEvent;
       var direction = input.offsetDirection;
       if (this.manager.session.prevented) {
@@ -3595,9 +3635,9 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
         return;
       }
       var actions = this.actions;
-      var hasNone = inStr(actions, TOUCH_ACTION_NONE);
-      var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y);
-      var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X);
+      var hasNone = inStr(actions, TOUCH_ACTION_NONE) && !TOUCH_ACTION_MAP[TOUCH_ACTION_NONE];
+      var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y) && !TOUCH_ACTION_MAP[TOUCH_ACTION_PAN_Y];
+      var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X) && !TOUCH_ACTION_MAP[TOUCH_ACTION_PAN_X];
       if (hasNone) {
         var isTapPointer = input.pointers.length === 1;
         var isTapMovement = input.distance < 2;
@@ -3634,6 +3674,17 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
       return TOUCH_ACTION_MANIPULATION;
     }
     return TOUCH_ACTION_AUTO;
+  }
+  function getTouchActionProps() {
+    if (!NATIVE_TOUCH_ACTION) {
+      return false;
+    }
+    var touchMap = {};
+    var cssSupports = window.CSS && window.CSS.supports;
+    ['auto', 'manipulation', 'pan-y', 'pan-x', 'pan-x pan-y', 'none'].forEach(function(val) {
+      touchMap[val] = cssSupports ? window.CSS.supports('touch-action', val) : true;
+    });
+    return touchMap;
   }
   var STATE_POSSIBLE = 1;
   var STATE_BEGAN = 2;
@@ -4076,7 +4127,7 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
     options.recognizers = ifUndefined(options.recognizers, Hammer.defaults.preset);
     return new Manager(element, options);
   }
-  Hammer.VERSION = '2.0.6';
+  Hammer.VERSION = '2.0.7';
   Hammer.defaults = {
     domEvents: false,
     touchAction: TOUCH_ACTION_COMPUTE,
@@ -4104,6 +4155,7 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
     this.handlers = {};
     this.session = {};
     this.recognizers = [];
+    this.oldCssProps = {};
     this.element = element;
     this.input = createInputInstance(this);
     this.touchAction = new TouchAction(this, this.options.touchAction);
@@ -4197,6 +4249,12 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
       return this;
     },
     on: function(events, handler) {
+      if (events === undefined) {
+        return;
+      }
+      if (handler === undefined) {
+        return;
+      }
       var handlers = this.handlers;
       each(splitStr(events), function(event) {
         handlers[event] = handlers[event] || [];
@@ -4205,6 +4263,9 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
       return this;
     },
     off: function(events, handler) {
+      if (events === undefined) {
+        return;
+      }
       var handlers = this.handlers;
       each(splitStr(events), function(event) {
         if (!handler) {
@@ -4246,9 +4307,19 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
     if (!element.style) {
       return;
     }
+    var prop;
     each(manager.options.cssProps, function(value, name) {
-      element.style[prefixed(element.style, name)] = add ? value : '';
+      prop = prefixed(element.style, name);
+      if (add) {
+        manager.oldCssProps[prop] = element.style[prop];
+        element.style[prop] = value;
+      } else {
+        element.style[prop] = manager.oldCssProps[prop] || '';
+      }
     });
+    if (!add) {
+      manager.oldCssProps = {};
+    }
   }
   function triggerDomEvent(event, data) {
     var gestureEvent = document.createEvent('Event');
@@ -6105,6 +6176,167 @@ define("1", ["5", "3", "e", "4", "6", "7", "8", "9", "a", "b", "c", "f", "10", "
       $newSelect.on('keydown', onKeyDown);
     });
   };
+  $.fn.tooltip = function(options) {
+    var timeout = null,
+        counter = null,
+        started = false,
+        counterInterval = null,
+        margin = 5;
+    var defaults = {delay: 350};
+    if (options === "remove") {
+      this.each(function() {
+        $('#' + $(this).attr('data-tooltip-id')).remove();
+      });
+      return false;
+    }
+    options = $.extend(defaults, options);
+    return this.each(function() {
+      var tooltipId = Materialize.guid();
+      var origin = $(this);
+      origin.attr('data-tooltip-id', tooltipId);
+      var tooltip_text = $('<span></span>').text(origin.attr('data-tooltip'));
+      var newTooltip = $('<div></div>');
+      newTooltip.addClass('material-tooltip').append(tooltip_text).appendTo($('body')).attr('id', tooltipId);
+      var backdrop = $('<div></div>').addClass('backdrop');
+      backdrop.appendTo(newTooltip);
+      backdrop.css({
+        top: 0,
+        left: 0
+      });
+      origin.off('mouseenter.tooltip mouseleave.tooltip');
+      origin.on({
+        'mouseenter.tooltip': function(e) {
+          var tooltip_delay = origin.data("delay");
+          tooltip_delay = (tooltip_delay === undefined || tooltip_delay === '') ? options.delay : tooltip_delay;
+          counter = 0;
+          counterInterval = setInterval(function() {
+            counter += 10;
+            if (counter >= tooltip_delay && started === false) {
+              started = true;
+              newTooltip.css({
+                display: 'block',
+                left: '0px',
+                top: '0px'
+              });
+              newTooltip.children('span').text(origin.attr('data-tooltip'));
+              var originWidth = origin.outerWidth();
+              var originHeight = origin.outerHeight();
+              var tooltipPosition = origin.attr('data-position');
+              var tooltipHeight = newTooltip.outerHeight();
+              var tooltipWidth = newTooltip.outerWidth();
+              var tooltipVerticalMovement = '0px';
+              var tooltipHorizontalMovement = '0px';
+              var scale_factor = 8;
+              if (tooltipPosition === "top") {
+                newTooltip.css({
+                  top: origin.offset().top - tooltipHeight - margin,
+                  left: origin.offset().left + originWidth / 2 - tooltipWidth / 2
+                });
+                tooltipVerticalMovement = '-10px';
+                backdrop.css({
+                  borderRadius: '14px 14px 0 0',
+                  transformOrigin: '50% 90%',
+                  marginTop: tooltipHeight,
+                  marginLeft: (tooltipWidth / 2) - (backdrop.width() / 2)
+                });
+              } else if (tooltipPosition === "left") {
+                newTooltip.css({
+                  top: origin.offset().top + originHeight / 2 - tooltipHeight / 2,
+                  left: origin.offset().left - tooltipWidth - margin
+                });
+                tooltipHorizontalMovement = '-10px';
+                backdrop.css({
+                  width: '14px',
+                  height: '14px',
+                  borderRadius: '14px 0 0 14px',
+                  transformOrigin: '95% 50%',
+                  marginTop: tooltipHeight / 2,
+                  marginLeft: tooltipWidth
+                });
+              } else if (tooltipPosition === "right") {
+                newTooltip.css({
+                  top: origin.offset().top + originHeight / 2 - tooltipHeight / 2,
+                  left: origin.offset().left + originWidth + margin
+                });
+                tooltipHorizontalMovement = '+10px';
+                backdrop.css({
+                  width: '14px',
+                  height: '14px',
+                  borderRadius: '0 14px 14px 0',
+                  transformOrigin: '5% 50%',
+                  marginTop: tooltipHeight / 2,
+                  marginLeft: '0px'
+                });
+              } else {
+                newTooltip.css({
+                  top: origin.offset().top + origin.outerHeight() + margin,
+                  left: origin.offset().left + originWidth / 2 - tooltipWidth / 2
+                });
+                tooltipVerticalMovement = '+10px';
+                backdrop.css({marginLeft: (tooltipWidth / 2) - (backdrop.width() / 2)});
+              }
+              scale_factor = tooltipWidth / 8;
+              if (scale_factor < 8) {
+                scale_factor = 8;
+              }
+              if (tooltipPosition === "right" || tooltipPosition === "left") {
+                scale_factor = tooltipWidth / 10;
+                if (scale_factor < 6)
+                  scale_factor = 6;
+              }
+              newTooltip.velocity({
+                marginTop: tooltipVerticalMovement,
+                marginLeft: tooltipHorizontalMovement
+              }, {
+                duration: 350,
+                queue: false
+              }).velocity({opacity: 1}, {
+                duration: 300,
+                delay: 50,
+                queue: false
+              });
+              backdrop.css({display: 'block'}).velocity({opacity: 1}, {
+                duration: 55,
+                delay: 0,
+                queue: false
+              }).velocity({scale: scale_factor}, {
+                duration: 300,
+                delay: 0,
+                queue: false,
+                easing: 'easeInOutQuad'
+              });
+            }
+          }, 10);
+        },
+        'mouseleave.tooltip': function() {
+          clearInterval(counterInterval);
+          counter = 0;
+          newTooltip.velocity({
+            opacity: 0,
+            marginTop: 0,
+            marginLeft: 0
+          }, {
+            duration: 225,
+            queue: false,
+            delay: 225
+          });
+          backdrop.velocity({
+            opacity: 0,
+            scale: 1
+          }, {
+            duration: 225,
+            delay: 275,
+            queue: false,
+            complete: function() {
+              backdrop.css('display', 'none');
+              newTooltip.css('display', 'none');
+              started = false;
+            }
+          });
+        }
+      });
+    });
+  };
   $(document).ready(function() {
     var swipeLeft = false;
     var swipeRight = false;
@@ -6264,6 +6496,6 @@ _removeDefine();
 })();
 })
 (function(factory) {
-  define(["jquery"], factory);
+  define(["npm:jquery@2.2.3.js"], factory);
 });
 //# sourceMappingURL=material_helper.js.map

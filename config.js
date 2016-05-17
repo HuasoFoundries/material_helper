@@ -19,8 +19,8 @@ System.config({
   },
 
   map: {
-    "hammerjs": "github:hammerjs/hammer.js@2.0.6",
-    "jquery": "npm:jquery@2.2.2",
+    "hammerjs": "github:hammerjs/hammer.js@2.0.8",
+    "jquery": "npm:jquery@2.2.3",
     "underscore": "npm:lodash@3.10.1",
     "velocity": "github:julianshapiro/velocity@1.2.3"
   }
